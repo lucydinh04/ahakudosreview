@@ -1,0 +1,94 @@
+/* AHAKUDOS Review layer — loaded ONLY on the review deployment. Outlines (not borders) so the layout never moves. */
+.aha-review-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:8px 16px;background:#0E4174;color:#fff;font:600 13px/1.4 Lexend,system-ui,sans-serif;position:relative;z-index:140}
+.aha-rv-brand{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aha-rv-brand b{font-size:14px;font-weight:800;letter-spacing:.2px}
+.aha-rv-flag{background:#FF7F32;color:#fff;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:800;letter-spacing:.6px}
+.aha-rv-note{color:#CFE0F5;font-weight:500}
+.aha-rv-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#CFE0F5;font-weight:500}
+.aha-rv-scn{display:inline-flex;align-items:center;gap:6px}
+.aha-rv-scenario{font:600 12.5px/1.2 inherit;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:#12508C;color:#fff;padding:5px 8px;max-width:220px}
+.aha-rv-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+.aha-rv-count,.aha-rv-mode,.aha-rv-pending{display:inline-flex;align-items:center;gap:6px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font:700 12.5px/1 inherit;padding:7px 12px;cursor:pointer}
+.aha-rv-mode.is-on{background:#FF7F32;border-color:#FF7F32}
+.aha-rv-pending{background:#FFF4E3;color:#7A4B12;border-color:#F3C98B}
+.aha-rv-badge{background:#FF7F32;color:#fff;border-radius:999px;padding:2px 7px;font-size:11.5px;font-weight:800}
+.aha-rv-badge.is-zero{background:rgba(255,255,255,.2)}
+.aha-rv-fab{position:fixed;left:16px;bottom:18px;z-index:150;border:0;border-radius:999px;background:#0E4174;color:#fff;font:700 13px/1 Lexend,system-ui,sans-serif;padding:11px 16px;box-shadow:0 8px 20px rgba(14,65,116,.3);cursor:pointer}
+.aha-rv-fab.is-on{background:#FF7F32}
+
+/* Feedback Mode: hover / selected / flash (outline + offset → no layout shift, content never covered) */
+body.fb-mode #app [data-feedback-id]{cursor:copy}
+body.fb-mode #app [data-feedback-id].fb-hover{outline:2px dashed rgba(255,127,50,.45);outline-offset:3px}
+#app [data-feedback-id].fb-selected{outline:2px solid #FF7F32;outline-offset:3px}
+#app [data-feedback-id].fb-flash{animation:aha-fb-flash 1.6s ease-out 1}
+@keyframes aha-fb-flash{0%,60%{outline:3px solid #FF7F32;outline-offset:4px;box-shadow:0 0 0 8px rgba(255,127,50,.18)}100%{outline:2px solid transparent;outline-offset:4px;box-shadow:none}}
+
+/* "!" indicators live in an overlay layer, positioned in document coordinates */
+.aha-fb-layer{position:absolute;top:0;left:0;width:0;height:0;z-index:130}
+.aha-fb-dot{position:absolute;transform:translateX(-100%);display:inline-flex;align-items:center;gap:4px;height:22px;min-width:22px;padding:0 7px;border-radius:999px;border:0;font:800 12px/22px Lexend,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.aha-fb-dot.is-open{background:#FF7F32;color:#fff}
+.aha-fb-dot.is-progress{background:#EAF3FF;color:#0E4174;box-shadow:0 0 0 1px #9BC4EA}
+.aha-fb-dot b{font-size:11px}
+
+/* Drawer: section panel + sidebar */
+.aha-fb-drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);z-index:160;background:#fff;border-left:1px solid #DCE5EF;box-shadow:-12px 0 30px rgba(14,65,116,.16);display:flex;flex-direction:column;font:400 14px/1.55 Lexend,system-ui,sans-serif;color:#1B1F24}
+.aha-fb-drawer[hidden]{display:none}
+.aha-fb-head{display:flex;justify-content:space-between;gap:12px;padding:16px 18px 12px;border-bottom:1px solid #EEF2F6}
+.aha-fb-kicker{font-size:11px;font-weight:800;letter-spacing:.8px;color:#C9500A}
+.aha-fb-head h2{margin:2px 0 0;font-size:18px;color:#0E4174}
+.aha-fb-sub{margin:2px 0 0;font-size:12.5px;color:#5B6B7F}
+.aha-fb-close{border:0;background:#F2F6FB;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;flex:0 0 auto}
+.aha-fb-body{padding:14px 18px 24px;overflow:auto;display:grid;gap:12px;align-content:start}
+.aha-fb-body h3{margin:6px 0 0;font-size:14px;color:#0E4174}
+.aha-fb-meta{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0;font-size:12.5px;background:#F6F9FD;border-radius:10px;padding:10px 12px}
+.aha-fb-meta dt{color:#5B6B7F}.aha-fb-meta dd{margin:0;font-weight:600;word-break:break-word}
+.aha-fb-list{display:grid;gap:10px}
+.aha-fb-item{border:1px solid #E3EAF2;border-radius:12px;padding:10px 12px;background:#fff}
+.aha-fb-item.is-link{cursor:pointer}.aha-fb-item.is-link:hover{border-color:#F3C9A6}
+.aha-fb-item.is-local{border-color:#F3C98B;background:#FFFBF3}
+.aha-fb-item-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aha-fb-item-head time{margin-left:auto;font-size:12px;color:#7A8899}
+.aha-fb-ctx{font-size:12px;color:#5B6B7F;margin-top:2px}
+.aha-fb-comment{margin:6px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.aha-fb-warn{margin:0 0 6px;font-size:12.5px;color:#A5611E}
+.aha-fb-status{border-radius:999px;padding:2px 8px;font-size:11px;font-weight:800}
+.aha-fb-status.is-open{background:#FF7F32;color:#fff}.aha-fb-status.is-in_progress{background:#EAF3FF;color:#0E4174}.aha-fb-status.is-done{background:#EAF8EF;color:#23804F}
+.aha-fb-acts{display:flex;gap:6px;flex-wrap:wrap}
+.aha-fb-act{border:1px solid #D5DFEA;background:#fff;border-radius:999px;padding:5px 11px;font:700 12px/1.2 inherit;color:#33475E;cursor:pointer}
+.aha-fb-act.is-primary{background:#0E4174;border-color:#0E4174;color:#fff}
+.aha-fb-empty{margin:0;color:#7A8899;font-size:13px}
+.aha-fb-form{display:grid;gap:8px;padding-top:6px;border-top:1px dashed #E3EAF2}
+.aha-fb-input{width:100%;box-sizing:border-box;border:1px solid #D5DFEA;border-radius:10px;padding:9px 11px;font:400 14px/1.5 inherit}
+.aha-fb-input:focus{outline:2px solid #9BC4EA;outline-offset:0}
+.aha-fb-error{margin:0;font-size:13px;color:#C0392B}
+.aha-fb-send{justify-self:start;border:0;border-radius:999px;background:#FF7F32;color:#fff;font:800 13.5px/1 inherit;padding:11px 18px;cursor:pointer}
+.aha-fb-send:disabled{opacity:.6;cursor:default}
+.aha-fb-seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:#F2F6FB;border-radius:999px;padding:3px}
+.aha-fb-seg button{border:0;background:transparent;border-radius:999px;padding:6px 11px;font:700 12px/1 inherit;color:#33475E;cursor:pointer}
+.aha-fb-seg button.is-active{background:#fff;color:#0E4174;box-shadow:0 1px 3px rgba(14,65,116,.18)}
+.aha-fb-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aha-fb-mine{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#33475E}
+.aha-fb-alert{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#FDECEC;color:#8E2A20;border-radius:10px;padding:8px 10px;font-size:13px}
+
+/* Mobile: drawer = full-screen sheet; indicators stay small; floating toggle avoids the mascot button (right) */
+@media (max-width:700px){
+  .aha-fb-drawer{width:100vw;top:auto;height:88vh;border-left:0;border-top-left-radius:18px;border-top-right-radius:18px;box-shadow:0 -12px 30px rgba(14,65,116,.2)}
+  .aha-review-bar{padding:8px 12px;font-size:12px}
+  .aha-rv-note{display:none}
+  .aha-rv-actions{margin-left:0}
+  .aha-rv-fab{left:12px;bottom:14px;padding:10px 13px;font-size:12px}
+}
+.aha-review-ui[hidden],.aha-review-ui [hidden]{display:none!important}
+.aha-rv-who{color:#CFE0F5;font-weight:600;font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aha-rv-logout{border:0;background:transparent;color:#FFB27A;font:700 12px/1 inherit;cursor:pointer;padding:6px 4px;text-decoration:underline}
+.aha-fb-noteinput{flex:1 1 100%;padding:7px 10px;font-size:13px}
+.aha-fb-histtoggle{border:0;background:transparent;color:#205C9E;font:700 12px/1.2 inherit;padding:6px 0 0;cursor:pointer}
+.aha-fb-history{list-style:none;margin:6px 0 0;padding:0 0 0 12px;border-left:2px solid #E3EAF2;display:grid;gap:8px}
+.aha-fb-history li{position:relative;font-size:12.5px;line-height:1.5}
+.aha-fb-history li::before{content:"";position:absolute;left:-18px;top:5px;width:10px;height:10px;border-radius:50%;background:#FF7F32;box-shadow:0 0 0 2px #fff}
+.aha-fb-history time{color:#7A8899;margin-right:6px}.aha-fb-history b{color:#0E4174;margin-right:6px}
+.aha-fb-by{color:#5B6B7F}
+.aha-fb-note{margin:2px 0 0;padding:6px 8px;background:#F6F9FD;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.aha-fb-history.is-global li{padding:8px 10px;border:1px solid #E3EAF2;border-radius:10px;background:#fff}
+.aha-fb-history.is-global li::before{left:-19px;top:14px}
+.aha-fb-history.is-global li.is-link{cursor:pointer}.aha-fb-history.is-global li.is-link:hover{border-color:#F3C9A6}

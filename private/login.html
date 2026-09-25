@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="{{BASE}}/branding/favicon.svg?v={{BUILD}}"><title>AHAKUDOS · DEV sign-in</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="{{BASE}}/app/dev-login.css?v={{BUILD}}"></head>
+<body><main class="card"><div class="brand">AHA<span>KUDOS</span></div><div class="kicker">DEV IDENTITY · CHỈ DÙNG Ở DEVELOPMENT / STAGING</div>
+<h1>Đăng nhập thử bằng email nhân sự</h1><p>Chế độ này thay cho AhaHandbook khi test. Email phải có trong tab DATA (hoặc ADMIN). Production không bao giờ hiển thị màn này.</p>
+<form id="login"><label for="email">Email @ahamove.com</label><input id="email" type="email" autocomplete="off" required placeholder="ten@ahamove.com">
+<label for="key">DEV_ACCESS_KEY</label><input id="key" type="password" autocomplete="off" spellcheck="false" required maxlength="64" placeholder="64 ký tự hex">
+<button id="submit" type="submit">Vào AHAKUDOS →</button><p class="error" id="error" role="alert"></p></form></main>
+<script id="ahakudos-config" type="application/json">{{CONFIG_JSON}}</script>
+<script src="{{BASE}}/app/dev-login.js?v={{BUILD}}"></script></body></html>

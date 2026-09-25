@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="{{BASE}}/branding/favicon.svg?v={{BUILD}}"><title>{{TITLE}}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="{{BASE}}/app/dev-login.css?v={{BUILD}}"></head>
+<body><main class="card"><div class="brand">AHA<span>KUDOS</span></div><div class="kicker">REVIEW MODE · KHÔNG PHẢI DỮ LIỆU PRODUCTION</div>
+<h1>Đăng nhập bản review</h1><p>Chỉ những email được cấp quyền review mới vào được. Nhập email công ty của bạn để bắt đầu.</p>
+<form id="login"><label for="email">Email @ahamove.com</label><input id="email" type="email" autocomplete="username" required placeholder="ten@ahamove.com">
+<div id="key-field" hidden><label for="key">Mã truy cập review</label><input id="key" type="password" autocomplete="current-password" spellcheck="false" maxlength="200" placeholder="Mã được gửi riêng"></div>
+<button id="submit" type="submit">Vào bản review →</button><p class="error" id="error" role="alert"></p></form></main>
+<script id="ahakudos-config" type="application/json">{{CONFIG_JSON}}</script>
+<script src="{{BASE}}/review/review-login.js?v={{BUILD}}"></script></body></html>

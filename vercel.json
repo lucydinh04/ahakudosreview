@@ -1,0 +1,115 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "functions": {
+    "api/page.js": {
+      "includeFiles": "private/**",
+      "maxDuration": 30
+    },
+    "api/bridge.js": {
+      "maxDuration": 60,
+      "includeFiles": "lib/review-snapshot.json"
+    },
+    "api/dev-login.js": {
+      "maxDuration": 10
+    },
+    "api/health.js": {
+      "maxDuration": 10
+    },
+    "api/background.js": {
+      "maxDuration": 30
+    },
+    "api/avatar.js": {
+      "maxDuration": 30
+    },
+    "api/feedback.js": {
+      "maxDuration": 30
+    },
+    "api/review-login.js": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/ahakudos",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/ahakudos/",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/ahakudos/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/ahakudos/:path*",
+      "destination": "/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/app/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/ahakudos/app/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(backgrounds|illustrations|branding)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/ahakudos/(backgrounds|illustrations|branding)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000"
+        }
+      ]
+    }
+  ]
+}

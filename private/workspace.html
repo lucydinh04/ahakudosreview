@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0e4174">
+  <meta name="robots" content="noindex,nofollow">
+  <title>AHAKUDOS · Ahamove</title>
+  <link rel="icon" type="image/svg+xml" href="{{BASE}}/branding/favicon.svg?v={{BUILD}}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{BASE}}/branding/favicon-32.png?v={{BUILD}}">
+  <link rel="apple-touch-icon" href="{{BASE}}/branding/apple-touch-icon.png?v={{BUILD}}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Caveat+Brush&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{BASE}}/app/app.css?v={{BUILD}}">
+</head>
+<body data-ahakudos-build="{{BUILD}}">
+  <div id="app"><div class="aha-loader aha-loader--boot aha-boot-status" role="status"><div class="aha-loader__stage" aria-hidden="true"><img class="aha-loader__mascot" src="{{BASE}}/illustrations/loading-mascot.webp" alt="" width="560" height="426"><span class="aha-loader__shadow"></span></div><div class="aha-loader__bar" aria-hidden="true"><i></i></div><p class="aha-loader__word">Loading...</p><p class="aha-loader__label">Đang kết nối AHAKUDOS…</p></div></div>
+  <div id="toast-root" role="status" aria-live="polite"></div>
+  <div id="modal-root"></div>
+  <script id="ahakudos-config" type="application/json">{{CONFIG_JSON}}</script>
+  <script src="{{BASE}}/app/boot.js?v={{BUILD}}"></script>
+  <script src="{{BASE}}/app/illustrations.js?v={{BUILD}}"></script>
+  <script src="{{BASE}}/app/app.js?v={{BUILD}}"></script>
+  {{REVIEW_ASSETS}}
+</body>
+</html>

@@ -26,7 +26,8 @@ function safeSet(key,value){try{if(value===null)localStorage.removeItem(key);els
 class ApiError extends Error{constructor(message,code,status){super(message);this.code=code||'ERROR';this.status=status||0;}}
 // ---- REVIEW MODE guard (only on the review deployment). The server refuses mutations too; this just avoids the round trip.
 const REVIEW=CONFIG.review||null;
-const REVIEW_READ=['layTrangThai','xemKudos','layDuLieuAdmin','xemTruocEmail','ghiDaMo','docPhanHoi'];
+// taoKudos is allowed in review as a SANDBOX send (email goes only to the signed-in reviewer; nothing reaches production).
+const REVIEW_READ=['layTrangThai','xemKudos','layDuLieuAdmin','xemTruocEmail','ghiDaMo','docPhanHoi','taoKudos'];
 function reviewScenario(){try{return localStorage.getItem('ahakudos-review-scenario')||'default';}catch(e){return 'default';}}
 function blockProductionMutation(method){if(REVIEW&&!REVIEW_READ.includes(method))throw new ApiError('Review Mode: thao tác này đã được disable.','REVIEW_DISABLED',403);}
 function showActionError(e){if(e&&e.code==='REVIEW_DISABLED'){toast(e.message);return;}window.alert(e&&e.message||'Không thực hiện được thao tác.');}
@@ -2204,12 +2205,12 @@ async function send(){
   state.prefillRecipient='';state.selectedRecipient=null;state.manualRecipient=false;state.values.clear();state.sendVisibility='public';state.kudosType='recognition';state.occasionLabel='';state.selectedTemplate=(typeTemplates('recognition')[0]||{id:'wish'}).id;
   state.page='kudos-detail';state.viewKudosId=result.record.id;
   try{history.replaceState(null,'','#/k/'+result.record.id);}catch(e){}
-  hideLoaderOverlay();render();window.scrollTo(0,0);showSuccessBanner(result.record,first); // the modal already explains the approval step, so no extra toast
+  hideLoaderOverlay();render();window.scrollTo(0,0);showSuccessBanner(result.record,first,REVIEW?result.notice:''); // the modal already explains the approval step, so no extra toast
  }catch(e){if(e.code==='QUOTA'&&QUOTA)QUOTA.remaining=0;if(e.code==='REVIEW_DISABLED'){toast(e.message);return;}window.alert((e.code==='TIMEOUT'||e.code==='NETWORK'?e.message+'\nBấm Gửi lại sẽ KHÔNG tạo bản trùng (cùng mã lần gửi).':e.message)+(backendOutdated()?'\n\nAHAKUDOS đang được cập nhật phiên bản. Nếu lỗi lặp lại, vui lòng báo L&OD.':''));}
  finally{hideLoaderOverlay();sending=false;if(document.contains(btn)){btn.disabled=false;btn.textContent='Gửi KUDOS';}}
 }
 function escapeHtml(str=''){return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-function showSuccessBanner(record,isFirst){
+function showSuccessBanner(record,isFirst,reviewNotice){
  const root=document.querySelector('#modal-root');
  const who=`<span class="nowrap-name">${record&&record.recipientName?escapeHtml(record.recipientName):'đồng nghiệp'}</span>`;
  root.innerHTML=`<div class="modal-backdrop kudos-success-backdrop"><div class="modal kudos-success-modal${isFirst?' first-kudos':''}" role="dialog" aria-modal="true" aria-labelledby="kudos-success-title">
@@ -2217,7 +2218,7 @@ function showSuccessBanner(record,isFirst){
   <div class="kudos-success-art" aria-hidden="true"><img src="${BASE}/illustrations/success-mascot.webp" alt="" width="560" height="464" data-hide-on-error></div>
   <div class="kicker">${isFirst?'KUDOS ĐẦU TIÊN CỦA BẠN':'GỬI KUDOS THÀNH CÔNG'}</div>
   <h2 id="kudos-success-title">${isFirst?'Chúc mừng! Bạn vừa gửi KUDOS đầu tiên 🎉':'Đã gửi KUDOS đến<br>'+who+'&nbsp;🎉'}</h2>
-  <p>Cảm ơn bạn đã lan tỏa sự ghi nhận.<br>KUDOS đang chờ Admin duyệt; sau khi duyệt, ${who} sẽ nhận email thông báo.</p>
+  <p>Cảm ơn bạn đã lan tỏa sự ghi nhận.<br>${reviewNotice?'Trên bản thật, KUDOS sẽ chờ Admin duyệt rồi mới gửi email tới '+who+'.':'KUDOS đang chờ Admin duyệt; sau khi duyệt, '+who+' sẽ nhận email thông báo.'}</p>${reviewNotice?'<p class="kudos-success-review">🧪 '+escapeHtml(reviewNotice)+'</p>':''}
   <div class="kudos-success-actions"><button class="btn secondary" data-success-more>Gửi thêm KUDOS</button><button class="btn primary" data-success-close>Xem KUDOS vừa gửi</button></div>
  </div></div>`;
  const close=()=>{root.innerHTML='';document.removeEventListener('keydown',onKey);};

@@ -85,15 +85,18 @@
     renderBar(); if (on) toast('Feedback Mode: bấm vào một khu vực có viền cam để góp ý.');
   }
   const isReviewUi = t => !!(t && t.closest && t.closest('.aha-review-ui'));
+  // Top menu controls keep working in Feedback Mode (switch tabs, search, account); comment on the menu by clicking its empty area.
+  const PASS_THROUGH = '.hb-header button, .hb-header a, .hb-header input, .hb-header select, .hb-header [role="button"]';
+  const passThrough = t => !!(t && t.closest && t.closest(PASS_THROUGH));
   document.addEventListener('mouseover', e => {
     if (!document.body.classList.contains('fb-mode') || isReviewUi(e.target)) return;
-    const s = e.target.closest && e.target.closest('[data-feedback-id]');
+    const s = passThrough(e.target) ? null : e.target.closest && e.target.closest('[data-feedback-id]');
     if (s === hoverEl) return; if (hoverEl) hoverEl.classList.remove('fb-hover'); hoverEl = s; if (s) s.classList.add('fb-hover');
   });
   // Capture phase: in Feedback Mode a click comments on the section instead of triggering the app.
   document.addEventListener('click', e => {
     if (!document.body.classList.contains('fb-mode') || isReviewUi(e.target)) return;
-    if (!e.target.closest || !e.target.closest('#app')) return;
+    if (!e.target.closest || !e.target.closest('#app') || passThrough(e.target)) return;
     e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
     const s = e.target.closest('[data-feedback-id]');
     if (!s) { toast('Khu vực này chưa hỗ trợ góp ý — chọn vùng có viền cam.'); return; }

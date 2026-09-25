@@ -4387,3 +4387,6 @@ p,li,small,.sub,blockquote,.coach-nudge,.home-def-v2__lead,.home-def-v2__support
 .kd-card .kd-value-caption{color:#C9500A}
 .kd-card .kd-value-chip{color:#1E62B8;border-color:rgba(30,98,184,.28);background:rgba(255,255,255,.72)}
 .kd-card .kd-recipient-stack{border-left-color:rgba(255,127,50,.35)}
+
+/* Review build only: sandbox-send note inside the success modal */
+.kudos-success-review{margin:10px auto 0;max-width:420px;padding:10px 14px;border-radius:12px;background:#eef4ff;color:#1d3f8f;font-size:13.5px;line-height:1.5}

@@ -53,7 +53,7 @@ async function rpc(method,...args){
 let BOOT;
 try{BOOT=await rpc('layTrangThai');if(!BOOT||!BOOT.me)throw new ApiError('Thiếu dữ liệu khởi tạo.','INVALID_RESPONSE');}
 catch(e){
- const copy=e.code==='NOT_IN_MASTER_DATA'?{title:'Tài khoản chưa có trong Master Data',message:e.message}
+ const copy=e.code==='NOT_IN_MASTER_DATA'?{title:'Tài khoản chưa có trong danh sách nhân sự',message:e.message}
   :e.code==='UNAUTHENTICATED'?{title:'Phiên đăng nhập đã hết hạn',message:'Vui lòng tải lại trang để đăng nhập lại AhaHandbook.'}
   :e.code==='FORBIDDEN'?{title:'Không có quyền truy cập',message:e.message}:null;
  window.AhaKudosBoot.fail(e,copy);return;
@@ -113,7 +113,7 @@ function unreadReceived(){return store.received.filter(k=>!k.viewedAt&&!k._seenL
 function unreadReplies(){const seen=new Set();return store.received.concat(store.sent).filter(k=>{if(seen.has(k.id))return false;seen.add(k.id);return k.replyUnread&&!k._replySeenLocal;});}
 function todayCommunityNew(){const today=vnDay(new Date().toISOString()),seen=safeGet(COMMUNITY_SEEN_KEY)||'';return store.community.filter(k=>vnDay(k.createdAt)===today&&String(k.createdAt)>seen&&k.recipientEmail!==me().email&&k.senderEmail!==me().email);}
 function markCommunitySeen(){const last=store.community.reduce((a,k)=>String(k.createdAt)>a?String(k.createdAt):a,'');if(last)safeSet(COMMUNITY_SEEN_KEY,last);}
-function fabState(){const u=unreadReceived();if(u.length)return {kind:'unread',n:u.length,label:`Bạn có ${u.length} KUDOS mới chưa đọc`,cta:'Đọc ngay →',id:u[0].id};const rp=unreadReplies();if(rp.length)return {kind:'unread',n:rp.length,label:`${rp.length} lời nhắn mới từ đồng nghiệp`,cta:'Xem lời nhắn →',id:rp[0].id};const c=todayCommunityNew();if(c.length)return {kind:'community',n:c.length,label:`${c.length} KUDOS mới trên Cộng đồng hôm nay`,cta:'Xem ngay →'};return {kind:'send',n:0,label:'Gửi một lời ghi nhận hôm nay?',cta:'Gửi KUDOS →'};}
+function fabState(){const u=unreadReceived();if(u.length)return {kind:'unread',n:u.length,label:`Bạn có ${u.length} KUDOS mới chưa đọc`,cta:'Đọc ngay →',id:u[0].id};const rp=unreadReplies();if(rp.length)return {kind:'unread',n:rp.length,label:`${rp.length} lời nhắn mới từ đồng nghiệp`,cta:'Xem lời nhắn →',id:rp[0].id};const c=todayCommunityNew();if(c.length)return {kind:'community',n:c.length,label:`${c.length} KUDOS mới trên Cộng đồng hôm nay`,cta:'Xem ngay →'};return {kind:'send',n:0,label:'Gửi một lời ghi nhận và cảm ơn hôm nay?',cta:'Gửi KUDOS →'};}
 function fabHtml(){const f=fabState();return `<button class="aha-floating-kudos aha-fab--${f.kind}" data-fab="${f.kind}" ${f.id?`data-fab-id="${escapeHtml(f.id)}"`:''} aria-label="${escapeHtml(f.label+'. '+f.cta)}" title="${escapeHtml(f.label)}"><img src="${BASE}/illustrations/mascot-cutout.png" alt="">${f.n?`<span class="aha-fab-count">${f.n>99?'99+':f.n}</span>`:''}<span class="aha-fab-bubble"><b>${escapeHtml(f.label)}</b><em>${escapeHtml(f.cta)}</em></span></button>`;}
 function openFab(btn){const k=btn.dataset.fab;if(k==='unread'&&btn.dataset.fabId){state.mode='employee';state.page='kudos-detail';state.viewKudosId=btn.dataset.fabId;try{history.replaceState(null,'','#/k/'+btn.dataset.fabId);}catch(e){}render();window.scrollTo(0,0);}else goToPage(k==='community'?'public-feed':'send-kudos');}
 // Welcome Onboard: the signed-in employee's Onboard Day is today → banner + confetti (once per day).
@@ -170,7 +170,7 @@ function buildKudosCard(k,opts){
  const bgLayer=bgUrl
    ?`<img class="kd-card-bg" src="${escapeHtml(bgUrl)}" alt="Background KUDOS ${escapeHtml(bg.name||'')}" loading="eager">`
    :`<div class="kd-card-bg kd-card-bg-fallback" aria-hidden="true"></div>`;
- const cardLabel=opts.mode==='public'?'NỘI DUNG KUDOS':'LỜI GHI NHẬN DÀNH CHO BẠN';
+ const cardLabel=opts.mode==='public'?'NỘI DUNG KUDOS':'LỜI GHI NHẬN & CẢM ƠN DÀNH CHO BẠN';
  return `<div class="kd-card kd-card-fullbg tpl-${escapeHtml(bg.id||k.templateId||'wish')} ${opts.mode==='public'?'kd-card-public':''}">
    ${bgLayer}
    <div class="kd-card-shade" aria-hidden="true"></div>
@@ -190,7 +190,7 @@ function buildKudosCard(k,opts){
        </div>`:''}
      </div>
      <div class="kd-card-msg${msgClass}">${msg}</div>
-     ${vals.length?`<div class="kd-values-block"><div class="kd-value-caption">Giá trị cốt lõi được ghi nhận</div><div class="kd-value-row">${chips}</div></div>`:''}
+     ${vals.length?`<div class="kd-values-block"><div class="kd-value-caption">Giá trị cốt lõi</div><div class="kd-value-row">${chips}</div></div>`:''}
    </div>
  </div>`;
 }
@@ -231,10 +231,10 @@ function loaderHtml(label='Đang tải…',cls=''){return `<div class="aha-loade
 // Same rule as kudosQuality_() in APPS_SCRIPT/Code.gs (keep in sync).
 const KUDOS_QUALITY={about:/(cảm ơn|cám ơn|biết ơn|trân trọng|ghi nhận|ngưỡng mộ|tự hào về|nể phục|nhờ (có )?(bạn|anh|chị|em|cậu|team|cả nhóm)|(bạn|anh|chị|em|cậu|team|cả nhóm)\s+(đã|luôn|vẫn|chủ động|nhiệt tình|giúp|hỗ trợ|chia sẻ|hướng dẫn|xử lý|đồng hành|lắng nghe|kiên nhẫn|dẫn dắt))/i,aboutName:/\p{Lu}\p{Ll}+\s+(đã|luôn|vẫn|chủ động|nhiệt tình|giúp|hỗ trợ)/u,moment:/(đã|chủ động|hỗ trợ|giúp|chia sẻ|xử lý|chuẩn bị|phối hợp|hoàn thành|hướng dẫn|giải thích|tổng hợp|kết nối|thực hiện|rà soát|sửa|dẫn dắt|đề xuất|lắng nghe|đứng ra|theo sát|đồng hành|lúc|khi|hôm)/i,energy:/(nhờ|nên|kịp|tiết kiệm|giảm|tăng|cải thiện|tránh|hiệu quả|yên tâm|thuận lợi|nhanh hơn|kết quả|khách hàng|dự án|deadline|tiến độ|chất lượng|cả team|mọi người|động lực|năng lượng|cảm hứng|tự tin|nhẹ nhõm|vui|học được|giúp mình|giúp em|giúp anh|giúp chị|giúp team|giúp cả)/i,minWords:15};
 function kudosQuality(text){const t=String(text||''),words=t.trim().split(/\s+/).filter(Boolean).length;const has={about:KUDOS_QUALITY.about.test(t)||KUDOS_QUALITY.aboutName.test(t),moment:KUDOS_QUALITY.moment.test(t),energy:KUDOS_QUALITY.energy.test(t)};return {ok:words>=KUDOS_QUALITY.minWords&&has.about&&has.moment&&has.energy,words,has};}
-const QUALITY_MESSAGE='KUDOS này chỉ còn thiếu một chút nữa để thật sự “woah”. Bạn tham khảo lại format chuẩn của một KUDOS và bổ sung thêm vài chi tiết, để khi đồng nghiệp nhận được, họ có thể cảm nhận rõ hơn sự chân thành và điều bạn muốn ghi nhận nhé!';
+const QUALITY_MESSAGE='KUDOS này chỉ còn thiếu một chút nữa để thật sự “woah”. Bạn tham khảo lại format chuẩn của một KUDOS và bổ sung thêm vài chi tiết, để khi đồng nghiệp nhận được, họ có thể cảm nhận rõ hơn sự chân thành và điều bạn muốn ghi nhận và cảm ơn nhé!';
 const QUALITY_RETURN_REASON='Chưa đủ chất lượng — người gửi được mời bổ sung chi tiết';
-function qualityFormatHtml(){return `<div class="quality-format"><b>Format tiêu chuẩn cho một KUDOS</b><span><strong>01</strong> Khoảnh khắc khiến bạn muốn ghi nhận</span><span><strong>02</strong> Sự hỗ trợ / Năng lượng mà bạn đã nhận được</span></div>`;}
-function qualityNoticeHtml(k){return `<div class="quality-notice" role="note"><img src="${BASE}/illustrations/quality-mascot.webp" alt="" width="560" height="484" data-hide-on-error><div><b>Kể thêm một chút về điều bạn muốn ghi nhận nha</b><p>${escapeHtml(QUALITY_MESSAGE)}</p>${k?`<button class="btn primary" data-rewrite-kudos="${escapeHtml(k.id)}">Viết lại KUDOS này →</button>`:''}</div></div>`;}
+function qualityFormatHtml(){return `<div class="quality-format"><b>Format tiêu chuẩn cho một KUDOS</b><span><strong>01</strong> Khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn</span><span><strong>02</strong> Sự hỗ trợ / Năng lượng mà bạn đã nhận được</span></div>`;}
+function qualityNoticeHtml(k){return `<div class="quality-notice" role="note"><img src="${BASE}/illustrations/quality-mascot.webp" alt="" width="560" height="484" data-hide-on-error><div><b>Kể thêm một chút về điều bạn muốn ghi nhận và cảm ơn nha</b><p>${escapeHtml(QUALITY_MESSAGE)}</p>${k?`<button class="btn primary" data-rewrite-kudos="${escapeHtml(k.id)}">Viết lại KUDOS này →</button>`:''}</div></div>`;}
 // Send-time check (Đồng nghiệp only). Resolves true to send anyway, false to keep editing.
 function confirmQuality(){
  return new Promise(resolve=>{
@@ -309,7 +309,7 @@ function customBg(id){return CUSTOM_BGS.find(b=>b.id===id)||null;}
 function customBgTemplates(){return CUSTOM_BGS.filter(b=>b.status==='ACTIVE').map(b=>({id:b.id,name:b.name,sticker:'🎁',custom:true}));}
 function allTemplates(){return cardTemplates.slice();}
 // KUDOS type is an explicit choice; each type shows only its own backgrounds.
-const KUDOS_TYPES=[{id:'recognition',label:'Đồng nghiệp',icon:'👥',hint:'Ghi nhận hành động, đóng góp của đồng nghiệp'},{id:'other',label:'Khác',icon:'🎁',hint:'Sinh nhật / Thâm niên / …'}];
+const KUDOS_TYPES=[{id:'recognition',label:'Đồng nghiệp',icon:'👥',hint:'Ghi nhận và cảm ơn hành động, đóng góp của đồng nghiệp'},{id:'other',label:'Khác',icon:'🎁',hint:'Sinh nhật / Thâm niên / …'}];
 // Occasions under "Khác". Each occasion: the Master Data date it uses (or typed when the recipient is not in DATA) and a ±2-day window.
 const OCCASIONS=[
  {id:'birthday',label:'Sinh nhật',icon:'🎂',field:'birthday',manualLabel:'Ngày sinh người nhận',payloadKey:'recipientBirthday',dataName:'Date of Birth',
@@ -411,14 +411,14 @@ function contextbar(){
  const firstName=escapeHtml((u.name||'bạn').split(' ').slice(-1)[0]);
  const tenureDays=employeeTenureDays(u);
  const tenureLine=isOnboardToday()||tenureDays===0
-   ?'Cùng khám phá AHAKUDOS — nơi mọi lời cảm ơn được lưu lại ✨'
+   ?'Cùng khám phá AHAKUDOS — nơi mọi lời ghi nhận và cảm ơn được lưu lại ✨'
    :tenureDays!==null
    ?`Cảm ơn bạn đã đồng hành cùng Ahamove <strong class="tenure-days">${tenureDays.toLocaleString('vi-VN')}</strong> ngày.`
    :'Cảm ơn bạn đã đồng hành cùng Ahamove.';
  const employeeGreeting=`<b>Xin chào, ${firstName}! <span class="wave" aria-hidden="true">👋</span></b><span>${tenureLine}</span>`;
  return `<div class="hb-contextbar">
   <div class="hb-context-left"><span class="hb-context-icon">${svg(state.mode==='employee'?'profile':'shield')}</span><div class="greeting">${state.mode==='employee'?employeeGreeting:'<b>Trung tâm quản trị</b><span>Không gian vận hành AHAKUDOS toàn công ty.</span>'}</div></div>
-  <div class="hb-context-right">${envBadge()}<div class="search hb-directory"><input id="hb-directory-search" placeholder="Tìm đồng nghiệp, phòng ban..." autocomplete="off" aria-label="Tìm đồng nghiệp trong Master Data" aria-expanded="false" aria-controls="hb-directory-results">${svg('search')}<div class="recipient-suggestions hidden" id="hb-directory-results"></div></div></div>
+  <div class="hb-context-right">${envBadge()}<div class="search hb-directory"><input id="hb-directory-search" placeholder="Tìm đồng nghiệp, phòng ban..." autocomplete="off" aria-label="Tìm đồng nghiệp" aria-expanded="false" aria-controls="hb-directory-results">${svg('search')}<div class="recipient-suggestions hidden" id="hb-directory-results"></div></div></div>
  </div>`;
 }
 function shell(content){
@@ -469,14 +469,14 @@ function employeeHome(){
      <div class="person-row">${miniAvatar(latest.senderEmail,latest.senderName)}<div><b>${escapeHtml(latest.senderName)}</b><span>${escapeHtml(latest.senderDept||'')} · ${escapeHtml(latest.sentAtLabel||'')}</span></div></div>
      <p>${escapeHtml(latest.message)}</p>
      <div class="value-tags">${(latest.values||[]).map(v=>`<span>${escapeHtml(CULTURE[v]||v)}</span>`).join('')}</div>
-     <div class="hb-note-signoff">Nhấn để mở lời ghi nhận <span>— và giữ lại cho riêng bạn</span></div>
+     <div class="hb-note-signoff">Nhấn để mở lời ghi nhận và cảm ơn <span>— và giữ lại cho riêng bạn</span></div>
     </div>
    </div>`:`
    <div class="hb-hero-note">
     <div class="hb-note-label"><span>✦</span> KUDOS gần nhất dành cho bạn</div>
-    <div class="kudos-highlight"><p>Bạn chưa nhận KUDOS nào. Khi một đồng nghiệp ghi nhận bạn, lời đó sẽ xuất hiện tại đây và được lưu trong Hồ sơ để bạn xem lại.</p></div>
+    <div class="kudos-highlight"><p>Bạn chưa nhận KUDOS nào. Khi một đồng nghiệp gửi lời ghi nhận và cảm ơn tới bạn, lời đó sẽ xuất hiện tại đây và được lưu trong Hồ sơ để bạn xem lại.</p></div>
    </div>`;
- const recentList=rec.slice(0,2).map(k=>receivedFeedItem(k)).join('')||`<div class="empty"><div class="icon">✦</div><h3>Chưa có KUDOS đã nhận</h3><p>Những lời ghi nhận dành cho bạn sẽ xuất hiện và được lưu tại đây.</p></div>`;
+ const recentList=rec.slice(0,2).map(k=>receivedFeedItem(k)).join('')||`<div class="empty"><div class="icon">✦</div><h3>Chưa có KUDOS đã nhận</h3><p>Những lời ghi nhận và cảm ơn dành cho bạn sẽ xuất hiện và được lưu tại đây.</p></div>`;
  const approvedCommunity=publicFeedList().slice(0,2);
  const pendingOwn=sentBy(u.email).filter(k=>k.visibility==='public'&&k.publicConsent!=='approved'&&modStatusOf(k)!=='HIDDEN').slice(0,2);
  const homeCommunityItems=approvedCommunity.length?approvedCommunity:pendingOwn;
@@ -494,52 +494,52 @@ function employeeHome(){
      <div>
       <span class="home-start-kicker">BẮT ĐẦU</span>
       <h2 class="home-start-title">Gửi KUDOS đầu tiên</h2>
-      <p class="home-start-sub">Chưa gửi KUDOS nào? Bắt đầu lan tỏa một lời ghi nhận thật lòng nhé.</p>
+      <p class="home-start-sub">Chưa gửi KUDOS nào? Bắt đầu lan tỏa một lời ghi nhận và cảm ơn thật lòng nhé.</p>
      </div>
     </div>
     <div class="home-start-grid">
      <article class="home-start-step">
       <span class="home-step-badge">1</span>
-      <img src="${BASE}/illustrations/home-step-select-person.png" alt="Chọn người bạn muốn ghi nhận">
-      <h3>Chọn người bạn muốn ghi nhận</h3>
-      <p>Tìm đồng nghiệp mà bạn muốn gửi một lời cảm ơn thật là woah.</p>
+      <img src="${BASE}/illustrations/home-step-select-person.png" alt="Chọn người bạn muốn ghi nhận và cảm ơn">
+      <h3>Chọn người bạn muốn ghi nhận và cảm ơn</h3>
+      <p>Tìm đồng nghiệp mà bạn muốn gửi một lời ghi nhận và cảm ơn thật là woah.</p>
      </article>
      <article class="home-start-step">
       <span class="home-step-badge">2</span>
-      <img src="${BASE}/illustrations/home-step-write-message.png" alt="Nội dung ghi nhận bạn muốn chia sẻ">
-      <h3>Nội dung ghi nhận bạn muốn chia sẻ</h3>
-      <p>Kể lại khoảnh khắc khiến bạn muốn ghi nhận và sự hỗ trợ / năng lượng bạn đã nhận được.</p>
+      <img src="${BASE}/illustrations/home-step-write-message.png" alt="Nội dung ghi nhận và cảm ơn bạn muốn chia sẻ">
+      <h3>Nội dung ghi nhận và cảm ơn bạn muốn chia sẻ</h3>
+      <p>Kể lại khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn, cùng sự hỗ trợ / năng lượng bạn đã nhận được.</p>
      </article>
      <article class="home-start-step">
       <span class="home-step-badge">3</span>
       <img src="${BASE}/illustrations/home-step-send-kudos.png" alt="Chọn giá trị và gửi KUDOS">
       <h3>Chọn giá trị &amp; gửi KUDOS</h3>
-      <p>Chọn giá trị cốt lõi phù hợp và gửi lời ghi nhận của bạn đi.</p>
+      <p>Chọn giá trị cốt lõi phù hợp và gửi lời ghi nhận và cảm ơn của bạn đi.</p>
      </article>
     </div>
     <button class="btn primary home-start-cta" data-page="send-kudos">Gửi KUDOS đầu tiên →</button>
    </article>`:`
    <article class="home-community-card">
     <div class="home-community-head">
-      <div><div class="kicker">CỘNG ĐỒNG KUDOS</div><h2>${homeCommunityMode==='pending'?'KUDOS của bạn đang chờ được lan tỏa':'Những chuyển động tích cực đang được lan tỏa'}</h2><p>${homeCommunityMode==='approved'?'Những KUDOS đã được Admin duyệt gần đây.':homeCommunityMode==='pending'?'Chưa có KUDOS nào được Admin duyệt. Trong lúc chờ, đây là lời ghi nhận bạn vừa gửi.':'Chưa có KUDOS nào được Admin duyệt để hiển thị.'}</p></div>
+      <div><div class="kicker">CỘNG ĐỒNG KUDOS</div><h2>${homeCommunityMode==='pending'?'KUDOS của bạn đang chờ được lan tỏa':'Những chuyển động tích cực đang được lan tỏa'}</h2><p>${homeCommunityMode==='approved'?'Những KUDOS đã được Admin duyệt gần đây.':homeCommunityMode==='pending'?'Chưa có KUDOS nào được Admin duyệt. Trong lúc chờ, đây là lời ghi nhận và cảm ơn bạn vừa gửi.':'Chưa có KUDOS nào được Admin duyệt để hiển thị.'}</p></div>
       <button class="link-btn" data-page="public-feed">Xem tất cả →</button>
     </div>
-    <div class="home-community-list">${homeCommunityCards||`<div class="empty"><div class="icon">✦</div><h3>Cộng đồng đang chờ lời ghi nhận đầu tiên</h3><p>Khi Admin duyệt KUDOS, những lời ghi nhận sẽ xuất hiện tại đây.</p></div>`}</div>
+    <div class="home-community-list">${homeCommunityCards||`<div class="empty"><div class="icon">✦</div><h3>Cộng đồng đang chờ lời ghi nhận và cảm ơn đầu tiên</h3><p>Khi Admin duyệt KUDOS, những lời ghi nhận và cảm ơn sẽ xuất hiện tại đây.</p></div>`}</div>
    </article>`
 const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
  const recvJourneyCard=noJourneyYet
-  ? `<div class="hb-journey-stat hb-journey-stat-empty"><strong>✦</strong><div><b>Bắt đầu hành trình KUDOS</b><span>Chưa có KUDOS nào được gửi hoặc nhận. Hãy bắt đầu bằng lời ghi nhận đầu tiên.</span></div></div>`
-  : `<div class="hb-journey-stat"><strong>${recvCount}</strong><div><b>${recvCount===0?'Chưa có KUDOS nào nhận được':'KUDOS bạn đã nhận'}</b><span>${recvCount===0?'Khi đồng nghiệp gửi lời ghi nhận, bạn sẽ thấy tại đây.':'Được lưu để xem lại bất cứ lúc nào'}</span></div></div>`;
+  ? `<div class="hb-journey-stat hb-journey-stat-empty"><strong>✦</strong><div><b>Bắt đầu hành trình KUDOS</b><span>Chưa có KUDOS nào được gửi hoặc nhận. Hãy bắt đầu bằng lời ghi nhận và cảm ơn đầu tiên.</span></div></div>`
+  : `<div class="hb-journey-stat"><strong>${recvCount}</strong><div><b>${recvCount===0?'Chưa có KUDOS nào nhận được':'KUDOS bạn đã nhận'}</b><span>${recvCount===0?'Khi đồng nghiệp gửi lời ghi nhận và cảm ơn, bạn sẽ thấy tại đây.':'Được lưu để xem lại bất cứ lúc nào'}</span></div></div>`;
  const sentJourneyCard=sentCount===0
-  ? `<div class="hb-journey-stat hb-journey-stat-warm"><strong>→</strong><div><b>Gửi KUDOS đầu tiên</b><span>Lan tỏa lời ghi nhận đầu tiên của bạn tới đồng nghiệp ngay hôm nay.</span><button class="hb-journey-mini-cta" data-page="send-kudos">Gửi KUDOS ngay →</button></div></div>`
+  ? `<div class="hb-journey-stat hb-journey-stat-warm"><strong>→</strong><div><b>Gửi KUDOS đầu tiên</b><span>Lan tỏa lời ghi nhận và cảm ơn đầu tiên của bạn tới đồng nghiệp ngay hôm nay.</span><button class="hb-journey-mini-cta" data-page="send-kudos">Gửi KUDOS ngay →</button></div></div>`
   : sentCount===1
    ? `<div class="hb-journey-stat hb-journey-stat-warm"><strong class="hb-gift-stat" aria-label="Quà KUDOS">🎁</strong><div><b class="hb-first-kudos-title">Chúc mừng bạn đã gửi <span>KUDOS đầu tiên!</span></b><span>Hãy chờ đón một món quà nhỏ đặc biệt dành cho cột mốc này nhé.</span></div></div>`
    : `<div class="hb-journey-stat hb-journey-stat-warm"><strong>${sentCount}</strong><div><b>KUDOS bạn đã gửi</b><span>Lan tỏa điều tích cực đến đồng nghiệp.</span></div></div>`;
  return `<section class="page active hb-home">${welcomeOnboardHtml()}
  <article class="recognition-hero hb-hero">
   <div class="moment-copy">
-   <span class="eyebrow">KHOẢNH KHẮC ĐƯỢC GHI NHẬN · AHAMOVE</span>
-   <h1>Cùng lan tỏa văn hoá ghi nhận <br>từ một lời cảm ơn.</h1>
+   <span class="eyebrow">KHOẢNH KHẮC ĐƯỢC GHI NHẬN & CẢM ƠN · AHAMOVE</span>
+   <h1>Cùng lan tỏa văn hoá <br>ghi nhận và cảm ơn.</h1>
    <p>Mỗi AHAKUDOS gửi đi là một dấu ấn được lưu lại, để điều tích cực tiếp tục lan tỏa.</p>
    <div class="hb-hero-actions"><button class="btn primary" data-page="send-kudos">${svg('send')} Gửi KUDOS ngay <span aria-hidden="true">→</span></button><button class="btn hb-btn-light" data-page="kudos-profile">Xem hồ sơ ${svg('profile')}</button></div>
   </div>
@@ -567,10 +567,10 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
     <div class="home-def-v2__copy">
      <span class="home-def-v2__badge">GIỚI THIỆU AHAKUDOS</span>
      <h2 id="home-def-title" class="home-def-v2__title">AHAKUDOS <span>là gì?</span></h2>
-     <p class="home-def-v2__lead">AHAKUDOS là nền tảng ghi nhận nội bộ của Ahamove, được xây dựng để giúp nhân viên dễ dàng gửi lời cảm ơn, ghi nhận những hành động tích cực và lan tỏa các giá trị cốt lõi trong công việc hằng ngày.</p>
+     <p class="home-def-v2__lead">AHAKUDOS là nền tảng ghi nhận và cảm ơn nội bộ của Ahamove, được xây dựng để giúp nhân viên dễ dàng ghi nhận và cảm ơn những hành động tích cực, đồng thời lan tỏa các giá trị cốt lõi trong công việc hằng ngày.</p>
      <blockquote class="home-def-v2__quote"><span class="home-def-v2__quote-mark" aria-hidden="true">“</span><p>Khi một đồng nghiệp làm điều gì đó có ý nghĩa, đóng góp ấy xứng đáng được nhìn thấy và trân trọng.</p></blockquote>
      <p class="home-def-v2__support">Đó có thể là khi một đồng nghiệp chủ động hỗ trợ bạn, giải quyết một vấn đề khó, chia sẻ kiến thức, đồng hành cùng team hoặc tạo ra một tác động tích cực.</p>
-     <div class="home-def-v2__note"><span class="home-def-v2__note-icon" aria-hidden="true">i</span><p>AHAKUDOS là chương trình ghi nhận văn hóa và <strong>không thay thế hệ thống đánh giá hiệu suất.</strong></p></div>
+     <div class="home-def-v2__note"><span class="home-def-v2__note-icon" aria-hidden="true">i</span><p>AHAKUDOS là chương trình văn hóa ghi nhận và cảm ơn, <strong>không thay thế hệ thống đánh giá hiệu suất.</strong></p></div>
     </div>
     <div class="home-def-v2__visual" aria-hidden="true">
      <div class="home-def-v2__slogan">
@@ -594,7 +594,7 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
       <h2>AHAKUDOS được phát triển nhằm</h2>
       <div class="home-handbook-goal-list">
        <span>Khuyến khích thói quen ghi nhận và cảm ơn trong công việc hằng ngày.</span>
-       <span>Giúp những đóng góp tích cực được nhìn thấy và ghi nhận đúng lúc.</span>
+       <span>Giúp những đóng góp tích cực được nhìn thấy, ghi nhận và cảm ơn đúng lúc.</span>
        <span>Lan tỏa hành vi văn hóa tích cực bằng những câu chuyện thật.</span>
        <span>Tăng sự kết nối giữa các Ahamovers trong quá trình làm việc.</span>
       </div>
@@ -607,8 +607,8 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
       <span class="home-handbook-card-kicker">BẠN CÓ THỂ NHẬN KUDOS TỪ ĐÂU?</span>
       <h2>Những khoảnh khắc có thể nhận KUDOS</h2>
       <div class="home-handbook-source-row">
-       <div><i>👥</i><b>Từ đồng nghiệp</b><p>Khi một đồng nghiệp nhìn thấy một hành động hoặc đóng góp tích cực của bạn, họ có thể chủ động gửi KUDOS để ghi nhận điều đó.</p></div>
-       <div><i>🎂</i><b>Từ những cột mốc đáng nhớ</b><p>AHAKUDOS cũng sẽ gửi lời chúc và ghi nhận vào một số dịp đặc biệt như <strong>Sinh nhật</strong> hoặc <strong>Kỷ niệm ngày vào công ty / Thâm niên</strong>.</p></div>
+       <div><i>👥</i><b>Từ đồng nghiệp</b><p>Khi một đồng nghiệp nhìn thấy một hành động hoặc đóng góp tích cực của bạn, họ có thể chủ động gửi KUDOS để ghi nhận và cảm ơn điều đó.</p></div>
+       <div><i>🎂</i><b>Từ những cột mốc đáng nhớ</b><p>AHAKUDOS cũng sẽ gửi lời chúc, lời ghi nhận và cảm ơn vào một số dịp đặc biệt như <strong>Sinh nhật</strong> hoặc <strong>Kỷ niệm ngày vào công ty / Thâm niên</strong>.</p></div>
       </div>
      </div>
     </article>
@@ -621,13 +621,13 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
     <div>
      <span class="home-handbook-card-kicker">GỬI MỘT KUDOS NHƯ THẾ NÀO?</span>
      <h2>Gửi KUDOS trong 3 bước</h2>
-     <p>Hãy chia sẻ khoảnh khắc khiến bạn muốn ghi nhận và sự hỗ trợ / năng lượng bạn đã nhận được từ đồng nghiệp. Sau đó, chọn Giá trị cốt lõi phù hợp (Tốc độ · Đồng hành · Đổi mới) — theo gợi ý hoặc theo cách bạn cảm nhận.</p>
+     <p>Hãy chia sẻ khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn, cùng sự hỗ trợ / năng lượng bạn đã nhận được từ đồng nghiệp. Sau đó, chọn Giá trị cốt lõi phù hợp (Tốc độ · Đồng hành · Đổi mới) — theo gợi ý hoặc theo cách bạn cảm nhận.</p>
     </div>
    </div>
    <div class="home-handbook-steps">
-    <div class="home-handbook-step"><b>01</b><div class="home-handbook-step-icon"><img src="${BASE}/illustrations/home-step-select-person.png" alt="Chọn đồng nghiệp"></div><h3>Chọn đồng nghiệp bạn muốn ghi nhận</h3><p>Tìm đồng nghiệp mà bạn muốn gửi một lời cảm ơn thật là woah.</p></div>
-    <div class="home-handbook-step"><b>02</b><div class="home-handbook-step-icon"><img src="${BASE}/illustrations/home-step-write-message.png" alt="Viết nội dung"></div><h3>Nội dung ghi nhận bạn muốn chia sẻ</h3><p>Kể lại khoảnh khắc khiến bạn muốn ghi nhận và sự hỗ trợ / năng lượng bạn đã nhận được.</p></div>
-    <div class="home-handbook-step"><b>03</b><div class="home-handbook-step-icon"><img src="${BASE}/illustrations/home-step-send-kudos.png" alt="Chọn giá trị và gửi KUDOS"></div><h3>Chọn giá trị &amp; gửi KUDOS</h3><p>Chọn Giá trị cốt lõi phù hợp và gửi lời ghi nhận của bạn đi.</p><button class="home-step-kudos-cta" data-page="send-kudos">Gửi KUDOS ngay →</button></div>
+    <div class="home-handbook-step"><b>01</b><div class="home-handbook-step-icon"><img src="${BASE}/illustrations/home-step-select-person.png" alt="Chọn đồng nghiệp"></div><h3>Chọn đồng nghiệp bạn muốn ghi nhận và cảm ơn</h3><p>Tìm đồng nghiệp mà bạn muốn gửi một lời ghi nhận và cảm ơn thật là woah.</p></div>
+    <div class="home-handbook-step"><b>02</b><div class="home-handbook-step-icon"><img src="${BASE}/illustrations/home-step-write-message.png" alt="Viết nội dung"></div><h3>Nội dung ghi nhận và cảm ơn bạn muốn chia sẻ</h3><p>Kể lại khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn, cùng sự hỗ trợ / năng lượng bạn đã nhận được.</p></div>
+    <div class="home-handbook-step"><b>03</b><div class="home-handbook-step-icon"><img src="${BASE}/illustrations/home-step-send-kudos.png" alt="Chọn giá trị và gửi KUDOS"></div><h3>Chọn giá trị &amp; gửi KUDOS</h3><p>Chọn Giá trị cốt lõi phù hợp và gửi lời ghi nhận và cảm ơn của bạn đi.</p><button class="home-step-kudos-cta" data-page="send-kudos">Gửi KUDOS ngay →</button></div>
    </div>
   </article>
 
@@ -640,7 +640,7 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
       <h3>Sinh nhật đồng nghiệp sắp tới</h3>
      </div>
     </div>
-    <div class="home-master-birthday-list">${birthdaySuggestions.length?birthdaySuggestions.slice(0,3).map(b=>`<div class="home-master-birthday-row">${miniAvatar(b.email,b.name,'birthday-avatar')}<div><b>${escapeHtml(b.name)}</b><span>${escapeHtml(b.dept||'')} · ${escapeHtml(b.when)} · ${escapeHtml(b.date)}</span></div>${b.canSend?`<button data-birthday="${escapeHtml(b.email)}">Gửi lời chúc →</button>`:`<span class="home-master-birthday-soon">Gửi lời chúc từ ${escapeHtml(b.opensLabel)}</span>`}</div>`).join(''):`<div class="home-master-empty">Chưa có sinh nhật nào trong 30 ngày tới theo Master Data.</div>`}</div>
+    <div class="home-master-birthday-list">${birthdaySuggestions.length?birthdaySuggestions.slice(0,3).map(b=>`<div class="home-master-birthday-row">${miniAvatar(b.email,b.name,'birthday-avatar')}<div><b>${escapeHtml(b.name)}</b><span>${escapeHtml(b.dept||'')} · ${escapeHtml(b.when)} · ${escapeHtml(b.date)}</span></div>${b.canSend?`<button data-birthday="${escapeHtml(b.email)}">Gửi lời chúc →</button>`:`<span class="home-master-birthday-soon">Gửi lời chúc từ ${escapeHtml(b.opensLabel)}</span>`}</div>`).join(''):`<div class="home-master-empty">Chưa có sinh nhật nào trong 30 ngày tới.</div>`}</div>
    </article>
 
    <article class="home-handbook-mini">
@@ -651,14 +651,14 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
       <h3>Thông báo sự kiện sắp diễn ra</h3>
      </div>
     </div>
-    <p>Khu vực này sẽ hiển thị các sự kiện nội bộ liên quan đến văn hoá ghi nhận để Ahamovers tiện theo dõi và tham gia.</p>
+    <p>Khu vực này sẽ hiển thị các sự kiện nội bộ liên quan đến văn hoá ghi nhận và cảm ơn để Ahamovers tiện theo dõi và tham gia.</p>
     <span class="home-handbook-mini-chip">Coming soon</span>
    </article>
   </div>
 
   <div class="home-handbook-bottom">
    <div class="home-handbook-bottom-icon">💬</div>
-   <div><b>Bạn đã sẵn sàng gửi một lời ghi nhận?</b><span>Một lời cảm ơn nhỏ có thể tạo nên động lực lớn cho đồng nghiệp.</span></div>
+   <div><b>Bạn đã sẵn sàng gửi một lời ghi nhận và cảm ơn?</b><span>Một lời ghi nhận và cảm ơn nhỏ có thể tạo nên động lực lớn cho đồng nghiệp.</span></div>
    <button class="btn primary" data-page="send-kudos">Gửi KUDOS ngay →</button>
   </div>
  </section>
@@ -666,13 +666,15 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
 }
 
 // ---- Public feed -----------------------------------------------------------
-function publicFeedPage(){
- const reactionMeta={heart:['🧡','Đồng cảm'],clap:['👏','Vỗ tay'],cheer:['🙌','Tuyệt vời'],spark:['✨','Lan tỏa']};
- const list=publicFeedList();
- const cards=list.map(k=>{
-   const tags=(k.values||[]).map(v=>`<span>${escapeHtml(CULTURE[v]||v)}</span>`).join('');
-   const template=templateMeta(k.templateId);
-   return `<article class="card public-kudos-card" data-public-card="${k.id}">
+const REACTION_META={heart:['🧡','Đồng cảm'],clap:['👏','Vỗ tay'],cheer:['🙌','Tuyệt vời'],spark:['✨','Lan tỏa']};
+// One KUDOS card, same look everywhere (CỘNG ĐỒNG KUDOS + Hồ sơ KUDOS). Reactions only on KUDOS that are in CỘNG ĐỒNG KUDOS.
+function communityCard(k,{badge='<span class="public-badge">◎ CỘNG ĐỒNG KUDOS</span>',extra='',reactions=true}={}){
+ const reactionRow=reactions?`<div class="reaction-row">
+       <div class="reaction-buttons">
+         ${Object.entries(REACTION_META).map(([key,meta])=>`<button class="reaction-btn ${k.myReactions&&k.myReactions[key]?'active':''}" data-reaction="${key}" data-public-id="${k.id}" title="${meta[1]}"><span>${meta[0]}</span><b>${Number((k.reactions&&k.reactions[key])||0)}</b></button>`).join('')}
+       </div>
+     </div>`:'';
+ return `<article class="card public-kudos-card" data-public-card="${k.id}">
      <div class="public-card-top">
        <div class="public-route">
          ${miniAvatar(k.senderEmail,k.senderName)}
@@ -681,19 +683,19 @@ function publicFeedPage(){
          ${miniAvatar(k.recipientEmail,k.recipientName,'recipient-public-avatar')}
          <div class="public-person"><b>${escapeHtml(k.recipientName)}</b><span>${escapeHtml(k.recipientDept||'')}</span></div>
        </div>
-       <div class="public-time"><span class="public-badge">◎ CỘNG ĐỒNG KUDOS</span><time>${escapeHtml(k.sentAtLabel||'Vừa xong')}</time></div>
+       <div class="public-time">${badge}<time>${escapeHtml(k.sentAtLabel||'Vừa xong')}</time></div>
      </div>
      <div class="public-kudos-visual kudos-open" role="button" tabindex="0" data-open-kudos="${k.id}">
        ${buildKudosCard(k,{mode:'public'})}
      </div>
-     <div class="reaction-row">
-       <div class="reaction-buttons">
-         ${Object.entries(reactionMeta).map(([key,meta])=>`<button class="reaction-btn ${k.myReactions&&k.myReactions[key]?'active':''}" data-reaction="${key}" data-public-id="${k.id}" title="${meta[1]}"><span>${meta[0]}</span><b>${Number((k.reactions&&k.reactions[key])||0)}</b></button>`).join('')}
-       </div>
-       <span class="reaction-note">Reaction dùng để hưởng ứng lời ghi nhận</span>
-     </div>
+     ${extra?`<div class="profile-card-extra">${extra}</div>`:''}
+     ${reactionRow}
    </article>`;
- }).join('');
+}
+function inCommunity(k){return !!(k&&(k.isCommunity||(k.visibility==='public'&&modStatusOf(k)==='APPROVED')));}
+function publicFeedPage(){
+ const list=publicFeedList();
+ const cards=list.map(k=>communityCard(k)).join('');
  return `<section class="page active">
    <div class="page-head public-feed-head">
      <div>
@@ -701,10 +703,9 @@ function publicFeedPage(){
        <h1>Những chuyển động tích cực đang được lan toả tại Ahamove</h1>
        <p class="page-sub">Những KUDOS được Admin duyệt cho phạm vi CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p>
      </div>
-     <div class="realtime-status"><i></i><div><b>Realtime</b><span>Đang cập nhật</span></div></div>
    </div>
    <div class="public-feed-layout">
-     <div class="public-feed-list" id="public-feed-list">${cards||`<div class="empty"><div class="icon">✦</div><h3>Chưa có CỘNG ĐỒNG KUDOS</h3><p>Những lời ghi nhận được Admin duyệt cho CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p></div>`}</div>
+     <div class="public-feed-list" id="public-feed-list">${cards||`<div class="empty"><div class="icon">✦</div><h3>Chưa có CỘNG ĐỒNG KUDOS</h3><p>Những lời ghi nhận và cảm ơn được Admin duyệt cho CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p></div>`}</div>
      <aside class="public-feed-rail">
        <article class="card public-feed-side-card">
          <div class="rail-title"><span>Lan tỏa hôm nay</span></div>
@@ -714,7 +715,7 @@ function publicFeedPage(){
        <article class="card public-feed-side-card public-feed-mascot-card">
          
          <div class="public-feed-mascot-wrap">${mascotIllustration()}</div>
-         <p>Một lời cảm ơn nhỏ có thể bắt đầu từ hôm nay — gửi một KUDOS để ghi nhận điều tốt đẹp bạn vừa nhìn thấy.</p>
+         <p>Một lời cảm ơn nhỏ có thể bắt đầu từ hôm nay — gửi một KUDOS để ghi nhận và cảm ơn điều tốt đẹp bạn vừa nhìn thấy.</p>
        </article>
        <button class="btn primary wide" data-page="send-kudos">+ Gửi một KUDOS</button>
      </aside>
@@ -747,12 +748,11 @@ return `<section class="page active kudos-compose-page">
  <div class="compose-hero">
   <div class="ch-copy">
    <div class="ch-eyebrow">AHAKUDOS · GHI NHẬN & CẢM ƠN</div>
-   <h1>Ghi nhận điều tuyệt vời mỗi ngày!</h1>
-   <p>Một lời ghi nhận xuất phát từ sự chân thành của bạn có thể trở thành động lực rất lớn cho đồng nghiệp trên hành trình Always Moving.</p>
+   <h1 class="ch-title"><span>Ghi nhận và cảm ơn</span> <span>điều tuyệt vời mỗi ngày!</span></h1>
+   <p>Một lời ghi nhận và cảm ơn xuất phát từ sự chân thành của bạn có thể trở thành động lực rất lớn cho đồng nghiệp trên hành trình Always Moving.</p>
   </div>
   <div class="ch-art">${ART?ART.heroCharacter():''}<span class="ch-glow" aria-hidden="true"></span></div>
  </div>
- <div class="hb-compose-steps" aria-label="Các bước gửi KUDOS"><span class="hb-step-intro">GỬI MỘT LỜI GHI NHẬN</span><ol><li><span>01</span>Người nhận & background</li><li><span>02</span>Nội dung KUDOS</li><li><span>03</span>Xem trước KUDOS</li><li><span>04</span>Gửi & chờ Admin duyệt</li></ol></div>
  <div class="form-layout kudos-compose-layout">
   <article class="card form-card kudos-compose-form">
    <div class="field kudos-type-field">
@@ -771,7 +771,7 @@ return `<section class="page active kudos-compose-page">
     </div>
    </div>
    <div class="field recipient-search-field">
-    <label>Email người bạn muốn ghi nhận</label>
+    <label>Email người bạn muốn ghi nhận và cảm ơn</label>
     <label class="recipient-mode-toggle"><input id="recipient-no-company-email" type="checkbox" ${state.manualRecipient?'checked':''}><span>Người nhận không có mail công ty</span></label>
     <div id="recipient-company-mode" class="recipient-company-mode ${state.manualRecipient?'hidden':''}">
       <div class="email-search-wrap">
@@ -780,7 +780,6 @@ return `<section class="page active kudos-compose-page">
         <div id="recipient-suggestions" class="recipient-suggestions hidden"></div>
       </div>
       <div id="selected-recipient" class="selected-recipient hidden"></div>
-      <span class="field-hint">Tìm trong Master Data bằng email Ahamove để lấy đúng họ tên và phòng ban.</span>
     </div>
     <div id="recipient-manual-mode" class="recipient-manual-mode ${state.manualRecipient?'':'hidden'}">
       <div class="recipient-manual-grid">
@@ -789,8 +788,7 @@ return `<section class="page active kudos-compose-page">
       </div>
       <label for="recipient-manual-email">Email liên hệ</label>
       <input id="recipient-manual-email" class="input" type="email" autocomplete="off" placeholder="name@example.com">
-      <div id="recipient-manual-dob-wrap" class="recipient-manual-dob ${isOccasion()?'':'hidden'}"><label for="recipient-manual-dob" id="recipient-manual-dob-label">${escapeHtml((occasionOf(state.kudosType)||OCCASIONS[0]).manualLabel)}</label><input id="recipient-manual-dob" class="input" type="date"><span class="field-hint">Bắt buộc khi người nhận không có trong Master Data.</span></div>
-      <span class="field-hint">Có thể nhập email ngoài @ahamove.com. KUDOS sẽ được đưa vào hàng chờ CỘNG ĐỒNG KUDOS; Admin là người duyệt trước khi hiển thị công khai.</span>
+      <div id="recipient-manual-dob-wrap" class="recipient-manual-dob ${isOccasion()?'':'hidden'}"><label for="recipient-manual-dob" id="recipient-manual-dob-label">${escapeHtml((occasionOf(state.kudosType)||OCCASIONS[0]).manualLabel)}</label><input id="recipient-manual-dob" class="input" type="date"><span class="field-hint">Bắt buộc khi người nhận không có mail công ty.</span></div>
     </div>
     <div id="birthday-status" class="birthday-status hidden" role="status" aria-live="polite"></div>
    </div>
@@ -803,7 +801,6 @@ return `<section class="page active kudos-compose-page">
      </div>
      <button type="button" class="bg-nav next" data-bg-nav="1" aria-label="Xem các background tiếp theo">›</button>
     </div>
-    <span class="field-hint">Vuốt hoặc dùng mũi tên để xem thêm. Background sẽ được dùng khi người nhận mở lời ghi nhận trong AHAKUDOS.</span>
    </div>
 
    <div class="compose-writing">
@@ -811,7 +808,7 @@ return `<section class="page active kudos-compose-page">
      <label for="message">Nội dung KUDOS</label>
      <div class="kudos-content-format ${isOccasion()?'hidden':''}" aria-label="Format nội dung KUDOS">
       <b>Format tiêu chuẩn cho một KUDOS:</b>
-      <span><strong>01</strong> Khoảnh khắc khiến bạn muốn ghi nhận</span>
+      <span><strong>01</strong> Khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn</span>
       <span><strong>02</strong> Sự hỗ trợ / Năng lượng mà bạn đã nhận được</span>
      </div>
      <textarea id="message" class="textarea" aria-describedby="count" placeholder="Ví dụ: Cảm ơn bạn đã chủ động hỗ trợ team xử lý gấp đầu việc trước deadline. Nhờ vậy cả team kịp tiến độ và tránh được một lỗi quan trọng. Mình rất trân trọng sự chủ động và tinh thần đồng đội của bạn."></textarea>
@@ -820,13 +817,13 @@ return `<section class="page active kudos-compose-page">
     <div class="coach coach--featured ${isOccasion()?'hidden':''}" role="region" aria-label="Thư ký hỗ trợ nội dung KUDOS">
      <div class="coach-head">
       <span class="coach-title"><span class="coach-badge" aria-hidden="true">✍</span><span class="coach-title-copy"><b>Thư ký hỗ trợ nội dung KUDOS</b><small>Thư ký nhỏ sẽ là người bạn đồng hành giúp bạn thêm một chút “gia vị”, để lời KUDOS thật là woah và chạm đến trái tim đồng nghiệp 🧡</small></span></span>
-      <span class="coach-actions"><span class="coach-live"><i aria-hidden="true"></i>Realtime</span><button type="button" class="coach-toggle" id="coach-toggle" aria-expanded="false" aria-controls="coach-more">Xem thêm</button></span>
+      <span class="coach-actions"><button type="button" class="coach-toggle" id="coach-toggle" aria-expanded="false" aria-controls="coach-more">Xem thêm</button></span>
      </div>
      <p class="coach-nudge" id="coach-nudge" role="status" aria-live="polite">Bắt đầu viết, mình sẽ kiểm tra xem nội dung đã có Khoảnh khắc → Sự hỗ trợ / Năng lượng bạn nhận được chưa.</p>
      <div class="coach-more hidden" id="coach-more">
       <p>Một nội dung KUDOS đầy đủ thường có:</p>
       <ul>
-       <li><b>Khoảnh khắc</b> khiến bạn muốn ghi nhận — chuyện gì đã xảy ra, lúc nào (không chỉ "cảm ơn nhiều nha").</li>
+       <li><b>Khoảnh khắc</b> khiến bạn muốn ghi nhận và cảm ơn — chuyện gì đã xảy ra, lúc nào (không chỉ "cảm ơn nhiều nha").</li>
        <li><b>Sự hỗ trợ / năng lượng</b> mà bạn đã nhận được — điều đó giúp bạn, đội nhóm hoặc công việc thế nào.</li>
       </ul>
       <p class="coach-note">Gợi ý dựa trên quy tắc viết — chưa dùng mô hình AI. Bạn luôn là người quyết định câu chữ; thư ký không tự sửa lời của bạn.</p>
@@ -839,19 +836,18 @@ return `<section class="page active kudos-compose-page">
     <div class="culture-picker culture-picker--defs" role="group" aria-labelledby="culture-picker-label">
      ${VALUE_IDS.map(v=>`<button type="button" class="culture-chip culture-card ${state.values.has(v)?'selected':''}" data-value="${v}" aria-pressed="${state.values.has(v)}"><span class="culture-card-head"><img class="culture-card-icon" src="${CULTURE_IMG(v)}" alt="" width="44" height="44" data-hide-on-error><b>${CULTURE[v]}</b><em class="culture-card-suggest">Gợi ý</em><span class="culture-card-tick" aria-hidden="true">✓</span></span><span class="culture-card-def">${escapeHtml(CULTURE_DEF[v])}</span></button>`).join('')}
     </div>
-    <div class="value-suggest-panel" id="ai-values" aria-live="polite">Viết nội dung KUDOS, Thư ký sẽ gợi ý Giá trị cốt lõi phù hợp kèm lý do. Bạn có thể tham khảo gợi ý, nhưng giá trị được chọn vẫn do bạn quyết định.</div>
+    <div class="value-suggest-panel" id="ai-values" aria-live="polite">Thư ký sẽ gợi ý Giá trị cốt lõi phù hợp kèm lý do. Bạn có thể tham khảo gợi ý, nhưng giá trị được chọn vẫn do bạn quyết định.</div>
    </div>
 
    <section class="compose-kudos-review" id="kudos-preview" aria-labelledby="kudos-review-title">
     <div class="email-review-heading">
-     <div><div class="kicker">KUDOS PREVIEW</div><h2 id="kudos-review-title" tabindex="-1">Xem trước KUDOS mà người ấy sẽ nhận</h2><p>Đây là nội dung đầy đủ người nhận sẽ thấy sau khi bấm “Mở lời ghi nhận này” trong email thông báo.</p></div>
-     <span class="email-review-sync"><i aria-hidden="true"></i>Tự động cập nhật</span>
+     <div><div class="kicker">KUDOS PREVIEW</div><h2 id="kudos-review-title" tabindex="-1">Xem trước KUDOS mà người ấy sẽ nhận</h2><p>Đây là nội dung đầy đủ người nhận sẽ thấy sau khi bấm “Mở lời ghi nhận và cảm ơn này” trong email thông báo.</p></div>
     </div>
     <div class="kudos-review-recipient"><span>Người nhận</span><strong id="kudos-preview-recipient">Chưa chọn người nhận</strong></div>
     <div class="kudos-review-canvas">
       <div id="kudos-preview-card" class="kudos-preview-card" aria-live="polite"></div>
     </div>
-    <p class="email-preview-note">Email chỉ thông báo rằng có KUDOS mới và dẫn vào màn này; nội dung lời ghi nhận không hiển thị trực tiếp trong email.</p>
+    <p class="email-preview-note">Email chỉ thông báo rằng có KUDOS mới và dẫn vào màn này; nội dung lời ghi nhận và cảm ơn không hiển thị trực tiếp trong email.</p>
    </section>
    <div class="compose-send-footer">
     <button type="button" class="link-btn" data-modal="rules">Xem quy tắc →</button>
@@ -867,37 +863,33 @@ function profile(){
  const u=me();
  const rec=receivedFor(u.email);
  const sent=sentBy(u.email);
- const receivedHtml=rec.length?`<div class="feed">${rec.map(k=>receivedFeedItem(k)).join('')}</div>`
+ const receivedHtml=rec.length?`<div class="public-feed-list profile-feed-list">${rec.map(k=>{
+     const unread=!k.viewedAt&&!k._seenLocal;
+     return communityCard(k,{badge:`<span class="public-badge profile-badge${unread?' is-new':''}">${unread?'● KUDOS mới':'💌 Đã nhận'}</span>`,extra:replyChip(k),reactions:inCommunity(k)});
+   }).join('')}</div>`
    :`<div class="received-empty-state">
       <img class="received-empty-mascot" src="${BASE}/illustrations/empty-received-mascot.png" alt="Mascot Ahamove đang chờ KUDOS" data-fallback="${BASE}/illustrations/mascot-cutout.png">
       <div class="received-empty-copy">
         <span class="received-empty-kicker">Đã nhận</span>
         <h3>Chưa có KUDOS nào</h3>
-        <p>Khi đồng nghiệp gửi lời ghi nhận, bạn sẽ thấy ở đây.</p>
+        <p>Khi đồng nghiệp gửi lời ghi nhận và cảm ơn, bạn sẽ thấy ở đây.</p>
         <button class="btn primary" data-page="send-kudos">Gửi KUDOS ngay →</button>
       </div>
     </div>`;
- const sentHtml=sent.length?`<div class="feed sent-history">${sent.map(k=>{
-     const cn=(k.values||[]).map(valueLabel);
+ const sentHtml=sent.length?`<div class="public-feed-list profile-feed-list sent-history">${sent.map(k=>{
      const ms=modStatusOf(k);
      const statusText=k.needsImprovement?'✎ Cần bổ sung nội dung':ms==='HIDDEN'?'● Không được duyệt hiển thị':ms==='HELD'?'🕓 Chờ Admin duyệt':k.visibility==='public'?'◎ CỘNG ĐỒNG KUDOS · Admin đã duyệt':'● Chỉ người nhận biết · Admin đã duyệt';
-     return `<div class="feed-item sent-feed-item kudos-open kudos-soft-bg" style="--soft-bg:url('${escapeHtml(bgFor(k.templateId).url)}')" role="button" tabindex="0" data-open-kudos="${k.id}">
-       <div class="feed-head">${miniAvatar(k.recipientEmail,k.recipientName)}<div class="who"><b>${escapeHtml(k.recipientName)}</b><span>${escapeHtml(k.recipientEmail)}</span></div><time>${escapeHtml(k.sentAtLabel||'Đã gửi')}</time></div>
-       <p>${escapeHtml(k.message)}</p>
-       ${k.needsImprovement?qualityNoticeHtml(k):''}
-       ${replyChip(k)}
-       <div class="sent-item-footer"><div>${cn.length?`<div class="sent-values-label">Giá trị cốt lõi được ghi nhận</div><div class="value-tags">${cn.map(n=>`<span>${escapeHtml(n)}</span>`).join('')}</div>`:''}<span class="sent-visibility ${k.visibility==='public'?'public':'private'}">${statusText}</span></div><button class="link-btn" data-open-kudos="${k.id}">Xem chi tiết</button></div>
-     </div>`;
+     return communityCard(k,{badge:`<span class="public-badge profile-badge sent-visibility ${k.visibility==='public'?'public':'private'}">${statusText}</span>`,extra:(k.needsImprovement?qualityNoticeHtml(k):'')+replyChip(k),reactions:inCommunity(k)});
    }).join('')}</div>`
    :`<div class="received-empty-state sent-empty-state">
       <img class="received-empty-mascot" src="${BASE}/illustrations/empty-sent-mascot.png" alt="Mascot Ahamove với hộp quà" data-fallback="${BASE}/illustrations/mascot-cutout.png">
       <div class="received-empty-copy">
         <h3>Chưa có KUDOS – Gửi lời khen đầu tiên</h3>
-        <p>Bắt đầu bằng một lời cảm ơn dành cho đồng nghiệp bạn muốn ghi nhận.</p>
+        <p>Bắt đầu bằng một lời cảm ơn dành cho đồng nghiệp bạn muốn ghi nhận và cảm ơn.</p>
         <button class="btn primary" data-page="send-kudos">Gửi KUDOS đầu tiên →</button>
       </div>
     </div>`;
-return `<section class="page active"><div class="page-head"><div><div class="kicker">HÀNH TRÌNH GHI NHẬN</div><h1>Hồ sơ KUDOS</h1><p class="page-sub">Xem lại những KUDOS bạn đã nhận và đã gửi — tất cả được lưu để bạn mở lại bất cứ lúc nào.</p></div></div>
+return `<section class="page active"><div class="page-head"><div><div class="kicker">HÀNH TRÌNH GHI NHẬN & CẢM ƠN</div><h1>Hồ sơ KUDOS</h1><p class="page-sub">Xem lại những KUDOS bạn đã nhận và đã gửi — tất cả được lưu để bạn mở lại bất cứ lúc nào.</p></div></div>
  <div class="profile-grid">
   <article class="card profile-card"><div class="profile-avatar-edit">${avatarMarkup('profile-big-avatar')}<button class="avatar-edit-btn profile-avatar-btn" data-avatar-edit title="Cập nhật avatar">✎</button></div><h2>${escapeHtml(u.name)}</h2><p>${escapeHtml(u.dept)} · Ahamove</p><button class="profile-avatar-link" data-avatar-edit>Cập nhật ảnh đại diện</button><div class="profile-stats profile-stats-two"><div class="pstat"><b>${rec.length}</b><span>Đã nhận</span></div><div class="pstat"><b>${sent.length}</b><span>Đã gửi</span></div></div></article>
   <article class="card card-pad">
@@ -924,14 +916,14 @@ function kudosDetail(){
        .catch(e=>{detailLoad[id]={error:e};if(e.code!=='KUDOS_NOT_AVAILABLE')console.error('[AHAKUDOS] xemKudos',e);})
        .finally(()=>{if(state.page==='kudos-detail'&&state.viewKudosId===id)render();});
    }
-   if(id&&(!d||d.loading))return `<section class="page active kudos-detail-page">${back}${loaderHtml('Đang mở lời ghi nhận…','aha-loader--page')}</section>`;
-   const msg=d&&d.error&&d.error.code!=='KUDOS_NOT_AVAILABLE'?escapeHtml(d.error.message):'KUDOS không tồn tại, chưa được Admin duyệt, hoặc bạn không có quyền xem lời ghi nhận này.';
-   return `<section class="page active kudos-detail-page">${back}<div class="empty"><div class="icon">✦</div><h3>Không mở được lời ghi nhận</h3><p>${msg}</p></div></section>`;
+   if(id&&(!d||d.loading))return `<section class="page active kudos-detail-page">${back}${loaderHtml('Đang mở lời ghi nhận và cảm ơn…','aha-loader--page')}</section>`;
+   const msg=d&&d.error&&d.error.code!=='KUDOS_NOT_AVAILABLE'?escapeHtml(d.error.message):'KUDOS không tồn tại, chưa được Admin duyệt, hoặc bạn không có quyền xem lời ghi nhận và cảm ơn này.';
+   return `<section class="page active kudos-detail-page">${back}<div class="empty"><div class="icon">✦</div><h3>Không mở được lời ghi nhận và cảm ơn</h3><p>${msg}</p></div></section>`;
  }
  const isRecipient=!!k.recipientEmail&&k.recipientEmail===u.email;
  const isSender=!!k.senderEmail&&k.senderEmail===u.email;
  if(!isRecipient&&!isSender&&!k.isCommunity){
-   return `<section class="page active kudos-detail-page">${back}<div class="empty"><div class="icon">✦</div><h3>Không mở được lời ghi nhận</h3><p>Bạn không có quyền xem lời ghi nhận này.</p></div></section>`;
+   return `<section class="page active kudos-detail-page">${back}<div class="empty"><div class="icon">✦</div><h3>Không mở được lời ghi nhận và cảm ơn</h3><p>Bạn không có quyền xem lời ghi nhận và cảm ơn này.</p></div></section>`;
  }
  // Mark as viewed only when the recipient actually opens the detail.
  if(isRecipient)k._seenLocal=true; // badge/corner button update in this same render
@@ -951,21 +943,21 @@ function kudosDetail(){
  if(isSender&&!isRecipient){
    const s=k.needsImprovement?'Admin mời bạn bổ sung thêm chi tiết trước khi gửi tới người nhận. Người nhận chưa nhận được thông báo.':status==='HIDDEN'?'KUDOS này không được Admin duyệt hiển thị. Người nhận sẽ không nhận được thông báo.'
      :status==='HELD'?'KUDOS đang chờ Admin duyệt. Người nhận sẽ nhận email thông báo sau khi Admin duyệt.'
-     :k.visibility==='public'?'Admin đã duyệt CỘNG ĐỒNG KUDOS. Lời ghi nhận đang hiển thị công khai với danh tính người gửi.'
-     :`Admin đã duyệt. Lời ghi nhận được gửi riêng cho ${escapeHtml(k.recipientName)}.`;
+     :k.visibility==='public'?'Admin đã duyệt CỘNG ĐỒNG KUDOS. Lời ghi nhận và cảm ơn đang hiển thị công khai với danh tính người gửi.'
+     :`Admin đã duyệt. Lời ghi nhận và cảm ơn được gửi riêng cho ${escapeHtml(k.recipientName)}.`;
    senderBlock=`<div class="kd-panel"><h3>Trạng thái</h3><p class="kd-sender-status">${s}</p></div>`+(k.needsImprovement?qualityNoticeHtml(k):'');
  }
  const replyBlock=isRecipient?(k.canReply||(k.replies||[]).length?replyThreadHtml(k,true):''):isSender&&(k.replies||[]).length?replyThreadHtml(k,false):'';
  const shareBlock=isRecipient&&k.canShareToCommunity?`<div class="kd-panel kd-share-panel"><h3>${k.sharedByRecipient?'Đang hiển thị trên CỘNG ĐỒNG KUDOS':'Lan tỏa niềm vui này?'}</h3><p>${k.sharedByRecipient?'Mọi người trong Ahamove đang cùng chúc mừng bạn. Bạn có thể chuyển về Riêng tư bất cứ lúc nào.':'AHAKUDOS này đang ở chế độ riêng tư. Bạn có thể chia sẻ lên CỘNG ĐỒNG KUDOS để đồng nghiệp cùng chúc mừng.'}</p><button class="btn ${k.sharedByRecipient?'secondary':'primary'}" data-share-community="${escapeHtml(k.id)}" data-share="${k.sharedByRecipient?'0':'1'}">${k.sharedByRecipient?'Chuyển về Riêng tư':'Chia sẻ đến CỘNG ĐỒNG KUDOS →'}</button></div>`:'';
  const backTarget=isSender&&!isRecipient?'kudos-profile':(k.isCommunity&&!isRecipient?'public-feed':'employee-home');
  const kicker=isRecipient?'KUDOS DÀNH CHO BẠN':isSender?'KUDOS BẠN ĐÃ GỬI':'CỘNG ĐỒNG KUDOS';
- const title=isRecipient&&k.welcome?'Lời nhắn từ AHAKUDOS 💌':isRecipient?'Có một lời ghi nhận dành riêng cho bạn 🧡':isSender?'Lời ghi nhận bạn đã gửi':'Một lời ghi nhận đang được lan tỏa';
- const sub=isRecipient&&k.welcome?'Gửi đến bạn nhân ngày gia nhập Ahamove.':isRecipient&&k.source==='ADMIN'?'AHAKUDOS gửi đến bạn lời ghi nhận nhân dịp đặc biệt này.':isRecipient?'Một đồng đội đã nhìn thấy điều bạn làm và muốn gửi đến bạn lời ghi nhận này.':isSender?'Đây là lời ghi nhận bạn đã gửi (trên background đã chọn).':'Lời ghi nhận đã được Admin duyệt cho CỘNG ĐỒNG KUDOS.';
+ const title=isRecipient&&k.welcome?'Lời nhắn từ AHAKUDOS 💌':isRecipient?'Có một lời ghi nhận và cảm ơn dành riêng cho bạn 🧡':isSender?'Lời ghi nhận và cảm ơn bạn đã gửi':'Một lời ghi nhận và cảm ơn đang được lan tỏa';
+ const sub=isRecipient&&k.welcome?'Gửi đến bạn nhân ngày gia nhập Ahamove.':isRecipient&&k.source==='ADMIN'?'AHAKUDOS gửi đến bạn lời ghi nhận và cảm ơn nhân dịp đặc biệt này.':isRecipient?'Một đồng đội đã nhìn thấy điều bạn làm và muốn gửi đến bạn lời ghi nhận và cảm ơn này.':isSender?'Đây là lời ghi nhận và cảm ơn bạn đã gửi (trên background đã chọn).':'Lời ghi nhận và cảm ơn đã được Admin duyệt cho CỘNG ĐỒNG KUDOS.';
  return `<section class="page active kudos-detail-page">
    <button class="kd-back" data-page="${backTarget}">← ${backTarget==='kudos-profile'?'Về Hồ sơ':backTarget==='public-feed'?'Về Cộng đồng':'Về trang chủ'}</button>
    <div class="page-head"><div><div class="kicker">${kicker}</div><h1>${title}</h1><p class="page-sub">${sub}</p></div></div>
    ${buildKudosCard(k,{mode:isRecipient?'':'public'})}
-   <div class="kd-panel"><div class="kd-row">${emailStatusPill}${visPill}</div>${isRecipient?'<div class="kd-save-note"><span>💾</span><div>Lời ghi nhận này được <b>tự động lưu</b> trong Hồ sơ KUDOS của bạn — không cần bấm "Lưu". Bạn có thể mở lại bất cứ lúc nào.</div></div>':''}</div>
+   <div class="kd-panel"><div class="kd-row">${emailStatusPill}${visPill}</div>${isRecipient?'<div class="kd-save-note"><span>💾</span><div>Lời ghi nhận và cảm ơn này được <b>tự động lưu</b> trong Hồ sơ KUDOS của bạn — không cần bấm "Lưu". Bạn có thể mở lại bất cứ lúc nào.</div></div>':''}</div>
    ${senderBlock}${shareBlock}${replyBlock}
  </section>`;
 }
@@ -1101,23 +1093,23 @@ function adminHome(){
  const emailPending=recs.filter(k=>k.email&&k.email.status==='PENDING').length;
  const mi=(ADMIN.master&&ADMIN.master.issues)||{};
  const masterWarn=ADMIN.master&&(mi.missingTab||(mi.missingRequired||[]).length||mi.skippedNoEmail||mi.skippedNoName||mi.invalidEmail||(mi.duplicates||[]).length)
-   ?`<div class="ops-note" role="status">⚠ Master Data: ${escapeHtml([mi.missingTab?'thiếu tab DATA':'',(mi.missingRequired||[]).length?'thiếu cột '+mi.missingRequired.join(', '):'',mi.skippedNoEmail?mi.skippedNoEmail+' dòng thiếu Work Email':'',mi.skippedNoName?mi.skippedNoName+' dòng thiếu Full Name':'',mi.invalidEmail?mi.invalidEmail+' email sai định dạng':'',(mi.duplicates||[]).length?(mi.duplicates.length+' email trùng'):''].filter(Boolean).join(' · '))}. Các dòng này được bỏ qua.</div>`:'';
+   ?`<div class="ops-note" role="status">⚠ Dữ liệu nhân sự (tab DATA): ${escapeHtml([mi.missingTab?'thiếu tab DATA':'',(mi.missingRequired||[]).length?'thiếu cột '+mi.missingRequired.join(', '):'',mi.skippedNoEmail?mi.skippedNoEmail+' dòng thiếu Work Email':'',mi.skippedNoName?mi.skippedNoName+' dòng thiếu Full Name':'',mi.invalidEmail?mi.invalidEmail+' email sai định dạng':'',(mi.duplicates||[]).length?(mi.duplicates.length+' email trùng'):''].filter(Boolean).join(' · '))}. Các dòng này được bỏ qua.</div>`:'';
  return `<section class="page active">
  <div class="admin-head"><div class="admin-logo-chip">${logo(true)}</div><div><h1>Trung tâm quản trị</h1><p>Không gian vận hành AHAKUDOS toàn công ty.</p></div></div>
- <div class="page-head"><div><div class="kicker">PROGRAM CONTROL</div><h1>Tổng quan AHAKUDOS</h1><p class="page-sub">Ghi nhận · Chất lượng · AHAKUDOS từ Admin · Sinh nhật & Thâm niên · Giá trị cốt lõi</p></div><button class="btn primary" data-page="admin-recognition">+ Gửi AHAKUDOS</button></div>
+ <div class="page-head"><div><div class="kicker">PROGRAM CONTROL</div><h1>Tổng quan AHAKUDOS</h1><p class="page-sub">Ghi nhận & cảm ơn · Chất lượng · AHAKUDOS từ Admin · Sinh nhật & Thâm niên · Giá trị cốt lõi</p></div><button class="btn primary" data-page="admin-recognition">+ Gửi AHAKUDOS</button></div>
  ${masterWarn}
  ${adminDataDashboard()}
  <div class="admin-grid">
-  <article class="card admin-card"><div class="card-head"><div><div class="kicker">PHÒNG BAN</div><h3>Mức độ được ghi nhận</h3><div class="sub">Theo số KUDOS đã duyệt mà phòng ban nhận được.</div></div><button class="link-btn" data-page="admin-dept">Chi tiết →</button></div>
+  <article class="card admin-card"><div class="card-head"><div><div class="kicker">PHÒNG BAN</div><h3>Mức độ được ghi nhận và cảm ơn</h3><div class="sub">Theo số KUDOS đã duyệt mà phòng ban nhận được.</div></div><button class="link-btn" data-page="admin-dept">Chi tiết →</button></div>
    <div class="table-wrap"><table><thead><tr><th>Phòng ban</th><th>KUDOS nhận</th><th>Người gửi</th><th>Người nhận</th></tr></thead><tbody>${agg.length?agg.map(a=>`<tr><td>${escapeHtml(a.dept)}</td><td><span class="bar"><i style="width:${Math.round(a.received/maxR*100)}%"></i></span>${a.received}</td><td>${a.senders}</td><td>${a.receivers}</td></tr>`).join(''):'<tr><td colspan="4" style="color:var(--muted);padding:14px">Chưa có dữ liệu.</td></tr>'}</tbody></table></div>
   </article>
   <article class="card admin-card"><div class="card-head"><div><div class="kicker">HÀNG CHỜ</div><h3>Nội dung cần duyệt (${held.length})</h3></div><button class="link-btn" data-page="admin-quality">Xem tất cả →</button></div>
    <div class="review-list">${held.slice(0,3).map(k=>`<div class="review-row">${miniAvatar(k.senderEmail,k.senderName)}<div><b>${escapeHtml(k.senderName||'')}</b><p>${escapeHtml(String(k.message||'').slice(0,90))}${String(k.message||'').length>90?'…':''}</p></div><span class="flag">${escapeHtml(modReasonsTextClient((k.moderation&&k.moderation.reasons||[]).filter(r=>r!=='admin_review'))[0]||'Chờ duyệt')}</span></div>`).join('')||'<p class="sub">Không có KUDOS nào đang chờ duyệt.</p>'}</div>
   </article>
-  <article class="card admin-card"><div class="card-head"><div><div class="kicker">GIÁ TRỊ CỐT LÕI</div><h3>Đang được ghi nhận</h3></div><button class="link-btn" data-page="admin-culture">Chi tiết →</button></div>
+  <article class="card admin-card"><div class="card-head"><div><div class="kicker">GIÁ TRỊ CỐT LÕI</div><h3>Đang được ghi nhận và cảm ơn</h3></div><button class="link-btn" data-page="admin-culture">Chi tiết →</button></div>
    <div class="culture-bars">${VALUE_IDS.map(v=>`<div class="culture-item"><div class="culture-bar-head"><span>${CULTURE[v]}</span><b>${Math.round(cnt[v]/totalV*100)}%</b></div><div class="culture-line"><i style="width:${Math.round(cnt[v]/totalV*100)}%"></i></div></div>`).join('')}</div>
   </article>
-  <article class="card admin-card"><div class="card-head"><div><div class="kicker">MASTER DATA · 30 NGÀY TỚI</div><h3>Sinh nhật, Thâm niên & Email</h3></div><button class="link-btn" data-page="admin-ops">Chi tiết →</button></div>
+  <article class="card admin-card"><div class="card-head"><div><div class="kicker">30 NGÀY TỚI</div><h3>Sinh nhật, Thâm niên & Email</h3></div><button class="link-btn" data-page="admin-ops">Chi tiết →</button></div>
    <div class="ops-row"><b>Sinh nhật</b><strong>${up.birthdays.length}</strong><span>trong ${up.windowDays||30} ngày tới</span></div>
    <div class="ops-row"><b>Thâm niên</b><strong>${up.anniversaries.length}</strong><span>kỷ niệm năm làm việc</span></div>
    <div class="ops-row"><b>Email</b><strong>${emailPending}</strong><span>chờ gửi · ${emailFailed} lỗi cần xử lý</span></div>
@@ -1132,7 +1124,7 @@ function adminDept(){
  const maxR=Math.max(1,...agg.map(a=>a.received));
  const rows=agg.length?agg.map(a=>`<tr><td>${escapeHtml(a.dept)}</td><td><span class="bar"><i style="width:${Math.round(a.received/maxR*100)}%"></i></span>${a.received}</td><td>${a.senders}</td><td>${a.receivers}</td><td>${escapeHtml(a.topCult)}</td></tr>`).join(''):`<tr><td colspan="5" style="color:var(--muted);padding:14px">Chưa có dữ liệu trong khoảng lọc.</td></tr>`;
  return `<section class="page active">
-   <div class="page-head"><div><div class="kicker">THEO PHÒNG BAN</div><h1>Mức độ ghi nhận & tham gia</h1><p class="page-sub">Chỉ tính KUDOS đã được Admin duyệt. Lọc theo thời gian / phòng ban và xuất CSV để báo cáo.</p></div></div>
+   <div class="page-head"><div><div class="kicker">THEO PHÒNG BAN</div><h1>Mức độ ghi nhận, cảm ơn & tham gia</h1><p class="page-sub">Chỉ tính KUDOS đã được Admin duyệt. Lọc theo thời gian / phòng ban và xuất CSV để báo cáo.</p></div></div>
    ${filterBar('dept')}
    <article class="card admin-card" style="padding:16px 18px;margin-top:14px"><div class="table-wrap"><table>
      <thead><tr><th>Phòng ban</th><th>KUDOS nhận</th><th>Người gửi</th><th>Người nhận</th><th>Giá trị nổi bật</th></tr></thead>
@@ -1209,7 +1201,7 @@ function adminQuality(){
    .mod-flag{background:var(--amber-soft,#FFF4E3);color:#A5751E;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;white-space:nowrap}
    .mod-reasons{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
    .mod-reason-chip{background:#FDECEC;color:#C0392B;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600}
-   .mod-msg{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere}
+   .mod-msg{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;overflow-wrap:break-word}
    .mod-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:flex-end}
    .mod-actions .btn{padding:9px 14px;font-size:13px}
    .mod-scope-control{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0}.mod-scope-control>span{font-size:12px;font-weight:800;color:var(--muted)}.mod-scope-control .btn{padding:6px 10px;font-size:12px}.mod-scope-control .btn.active{background:#EAF2FB;border-color:#9BC4EA;color:#0E4174}
@@ -1266,7 +1258,7 @@ async function openModPreview(id){
 }
 function openModEdit(id){
  const k=adminRecordById(id);if(!k)return;
- document.querySelector('#modal-root').innerHTML=`<div class="modal-backdrop"><div class="modal"><button class="modal-close" aria-label="Đóng">×</button><div class="kicker">SỬA NỘI DUNG</div><h2>Sửa lời ghi nhận</h2><p>Chỉnh nội dung rồi lưu; hệ thống sẽ kiểm duyệt lại tự động.</p><textarea id="mod-edit-msg" class="textarea" style="min-height:160px">${escapeHtml(k.message||'')}</textarea><div class="form-actions" style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end"><button class="btn secondary" data-mod-edit-cancel>Huỷ</button><button class="btn primary" data-mod-edit-save="${escapeHtml(k.id)}">Lưu &amp; kiểm duyệt lại</button></div></div></div>`;
+ document.querySelector('#modal-root').innerHTML=`<div class="modal-backdrop"><div class="modal"><button class="modal-close" aria-label="Đóng">×</button><div class="kicker">SỬA NỘI DUNG</div><h2>Sửa lời ghi nhận và cảm ơn</h2><p>Chỉnh nội dung rồi lưu; hệ thống sẽ kiểm duyệt lại tự động.</p><textarea id="mod-edit-msg" class="textarea" style="min-height:160px">${escapeHtml(k.message||'')}</textarea><div class="form-actions" style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end"><button class="btn secondary" data-mod-edit-cancel>Huỷ</button><button class="btn primary" data-mod-edit-save="${escapeHtml(k.id)}">Lưu &amp; kiểm duyệt lại</button></div></div></div>`;
  const close=()=>{document.querySelector('#modal-root').innerHTML='';};
  document.querySelector('.modal-close').addEventListener('click',close);
  document.querySelector('[data-mod-edit-cancel]').addEventListener('click',close);
@@ -1327,7 +1319,7 @@ function peopleFiltered(){
 function normalizeSearch(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/gi,'d').toLowerCase().trim();}
 function peopleRowsHtml(list){
  return list.slice(0,300).map(p=>`<tr class="people-row" data-person="${escapeHtml(p.email)}" tabindex="0" role="button" aria-label="Xem chi tiết ${escapeHtml(p.name)}">
-   <td><div class="people-cell">${miniAvatar(p.email,p.name)}<div><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.email)}${p.inData?'':' · ngoài Master Data'}</span></div></div></td>
+   <td><div class="people-cell">${miniAvatar(p.email,p.name)}<div><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.email)}${p.inData?'':' · ngoài danh sách nhân sự'}</span></div></div></td>
    <td>${escapeHtml(p.dept||'—')}${p.section?`<span class="people-sub">${escapeHtml(p.section)}</span>`:''}</td>
    <td><b>${p.sentOk}</b><span class="people-sub">/${p.sent} đã gửi</span></td>
    <td><b>${p.receivedOk}</b><span class="people-sub">/${p.received} đã nhận</span></td>
@@ -1344,10 +1336,10 @@ function adminPeople(){
  const inData=all.filter(p=>p.inData).length;
  const tile=(ic,label,val,sub)=>`<article class="metric"><div class="metric-icon">${ic}</div><span>${label}</span><strong>${val}</strong><em>${sub||''}</em></article>`;
  return `<section class="page active">
-  <div class="page-head"><div><div class="kicker">NHÂN VIÊN</div><h1>Hoạt động KUDOS theo từng nhân viên</h1><p class="page-sub">Toàn bộ nhân sự theo Master Data. Lọc theo thời gian, phòng ban, giá trị cốt lõi. Số đậm là KUDOS đã được duyệt; số nhỏ là tổng đã tạo. Bấm vào một người để xem chi tiết.</p>${dashValue?`<p class="sub">Đang lọc: KUDOS có giá trị <b>${CULTURE[dashValue]}</b>.</p>`:''}</div></div>
+  <div class="page-head"><div><div class="kicker">NHÂN VIÊN</div><h1>Hoạt động KUDOS theo từng nhân viên</h1><p class="page-sub">Toàn bộ nhân sự Ahamove. Lọc theo thời gian, phòng ban, giá trị cốt lõi. Số đậm là KUDOS đã được duyệt; số nhỏ là tổng đã tạo. Bấm vào một người để xem chi tiết.</p>${dashValue?`<p class="sub">Đang lọc: KUDOS có giá trị <b>${CULTURE[dashValue]}</b>.</p>`:''}</div></div>
   ${filterBar('people')}
   <div class="metric-grid" style="margin-top:14px">
-   ${tile('👥','Nhân viên trong Master Data',inData,dashDept?escapeHtml(dashDept):'tab DATA')}
+   ${tile('👥','Nhân viên',inData,dashDept?escapeHtml(dashDept):'tab DATA')}
    ${tile('✦','Có hoạt động',active,inData?Math.round(active/inData*100)+'% nhân viên':'')}
    ${tile('→','Đã gửi KUDOS',senders,'người')}
    ${tile('★','Đã nhận KUDOS',receivers,'người')}
@@ -1383,7 +1375,7 @@ function adminPersonDetail(email){
   <button class="kd-back" data-person-back>← Danh sách nhân viên</button>
   <div class="person-head card admin-card">
    ${miniAvatar(st.email,st.name,'person-avatar')}
-   <div class="person-id"><h1>${escapeHtml(st.name)}</h1><p>${escapeHtml(st.email)}${st.dept?' · '+escapeHtml(st.dept):''}${st.section?' · '+escapeHtml(st.section):''}${st.inData?'':' · <b>ngoài Master Data</b>'}</p></div>
+   <div class="person-id"><h1>${escapeHtml(st.name)}</h1><p>${escapeHtml(st.email)}${st.dept?' · '+escapeHtml(st.dept):''}${st.section?' · '+escapeHtml(st.section):''}${st.inData?'':' · <b>ngoài danh sách nhân sự</b>'}</p></div>
    <button class="btn secondary" data-person-export="${escapeHtml(email)}">⬇ Xuất CSV</button>
   </div>
   ${filterBar('people')}
@@ -1394,10 +1386,10 @@ function adminPersonDetail(email){
    ${tile('Hoạt động gần nhất',escapeHtml(fmtDateTime(st.last).split(' ')[0]||'—'),'')}
   </div>
   <div class="admin-grid" style="margin-top:14px">
-   <article class="card admin-card"><div class="card-head"><div><div class="kicker">GIÁ TRỊ ĐƯỢC GHI NHẬN</div><h3>Qua KUDOS đã nhận</h3></div></div><div class="culture-bars">${bars(valCount(received))}</div>
-    <div class="person-top"><b>Được ghi nhận nhiều nhất bởi</b>${topSenders.length?topSenders.map(([n,c])=>`<span>${escapeHtml(n)} · ${c}</span>`).join(''):'<span>—</span>'}</div></article>
+   <article class="card admin-card"><div class="card-head"><div><div class="kicker">GIÁ TRỊ CỐT LÕI</div><h3>Qua KUDOS đã nhận</h3></div></div><div class="culture-bars">${bars(valCount(received))}</div>
+    <div class="person-top"><b>Được ghi nhận và cảm ơn nhiều nhất bởi</b>${topSenders.length?topSenders.map(([n,c])=>`<span>${escapeHtml(n)} · ${c}</span>`).join(''):'<span>—</span>'}</div></article>
    <article class="card admin-card"><div class="card-head"><div><div class="kicker">GIÁ TRỊ ĐÃ TRAO</div><h3>Qua KUDOS đã gửi</h3></div></div><div class="culture-bars">${bars(valCount(sent))}</div>
-    <div class="person-top"><b>Ghi nhận nhiều nhất cho</b>${topRecipients.length?topRecipients.map(([n,c])=>`<span>${escapeHtml(n)} · ${c}</span>`).join(''):'<span>—</span>'}</div></article>
+    <div class="person-top"><b>Ghi nhận và cảm ơn nhiều nhất cho</b>${topRecipients.length?topRecipients.map(([n,c])=>`<span>${escapeHtml(n)} · ${c}</span>`).join(''):'<span>—</span>'}</div></article>
   </div>
   <article class="card admin-card" style="padding:16px 18px;margin-top:14px">
    <div class="tabs"><button class="tab ${personTab==='received'?'active':''}" data-person-tab="received">Đã nhận (${received.length})</button><button class="tab ${personTab==='sent'?'active':''}" data-person-tab="sent">Đã gửi (${sent.length})</button></div>
@@ -1477,19 +1469,19 @@ function prepareBackgroundImage(file){
 function adminRecognition(){
  const gate=adminGate();if(gate)return gate;
  const recognitionTypes=[
-  ['acting','Acting / Đảm nhận vai trò tạm thời','Ghi nhận một giai đoạn chủ động nhận thêm vai trò hoặc trách nhiệm.'],
+  ['acting','Acting / Đảm nhận vai trò tạm thời','Ghi nhận và cảm ơn một giai đoạn chủ động nhận thêm vai trò hoặc trách nhiệm.'],
   ['promotion','Thăng cấp / Thăng chức','Ghi dấu một bước phát triển trong hành trình nghề nghiệp.'],
-  ['trainer','Trainer / Buddy','Ghi nhận đóng góp trong việc đồng hành và phát triển người khác.'],
-  ['project','Milestone dự án','Ghi nhận một dấu mốc hoặc đóng góp nổi bật trong dự án.'],
-  ['campaign','Hoạt động / Campaign nội bộ','Ghi nhận đóng góp cho hoạt động chung của công ty.'],
-  ['other','Ghi nhận khác','Dành cho trường hợp Admin cần tạo một AHAKUDOS phù hợp khác.']
+  ['trainer','Trainer / Buddy','Ghi nhận và cảm ơn đóng góp trong việc đồng hành và phát triển người khác.'],
+  ['project','Milestone dự án','Ghi nhận và cảm ơn một dấu mốc hoặc đóng góp nổi bật trong dự án.'],
+  ['campaign','Hoạt động / Campaign nội bộ','Ghi nhận và cảm ơn đóng góp cho hoạt động chung của công ty.'],
+  ['other','Ghi nhận & cảm ơn khác','Dành cho trường hợp Admin cần tạo một AHAKUDOS phù hợp khác.']
  ];
  return `<section class="page active">
    <div class="page-head">
      <div>
        <div class="kicker">AHAKUDOS MỞ RỘNG</div>
        <h1>Gửi AHAKUDOS từ Admin</h1>
-       <p class="page-sub">Ghi nhận thêm vai trò, cột mốc phát triển và những đóng góp trong hoạt động nội bộ của Ahamovers.</p>
+       <p class="page-sub">Ghi nhận và cảm ơn những vai trò mới, cột mốc phát triển và những đóng góp trong hoạt động nội bộ của Ahamovers.</p>
      </div>
    </div>
    <div class="admin-recognition-layout">
@@ -1514,13 +1506,13 @@ function adminRecognition(){
            <span class="field-hint">Email ngoài @ahamove.com được phép nhập tự do. KUDOS này sẽ được giữ riêng tư.</span>
          </div>
        </div>
-       <div class="admin-section-title"><span>2</span><div><b>Chọn nội dung ghi nhận</b><p>Chọn loại phù hợp với cột mốc hoặc đóng góp thực tế.</p></div></div>
+       <div class="admin-section-title"><span>2</span><div><b>Chọn nội dung ghi nhận và cảm ơn</b><p>Chọn loại phù hợp với cột mốc hoặc đóng góp thực tế.</p></div></div>
        <div class="recognition-type-grid">
          ${recognitionTypes.map((t,i)=>`<button type="button" class="recognition-type ${i===0?'selected':''}" data-recognition-type="${t[0]}"><strong>${t[1]}</strong><span>${t[2]}</span></button>`).join('')}
        </div>
-       <div class="admin-section-title"><span>3</span><div><b>Hoàn thiện lời ghi nhận</b><p>Nội dung sẽ được gửi đến nhân sự qua email và lưu trong Hồ sơ KUDOS.</p></div></div>
+       <div class="admin-section-title"><span>3</span><div><b>Hoàn thiện lời ghi nhận và cảm ơn</b><p>Nội dung sẽ được gửi đến nhân sự qua email và lưu trong Hồ sơ KUDOS.</p></div></div>
        <div class="field"><label>Tiêu đề AHAKUDOS</label><input id="admin-recognition-title" class="input" value="Cảm ơn bạn vì một hành trình đáng ghi nhận"></div>
-       <div class="field"><label>Nội dung</label><textarea id="admin-recognition-message" class="textarea" placeholder="Chia sẻ cột mốc, đóng góp hoặc điều Ahamove muốn ghi nhận ở nhân sự..."></textarea></div>
+       <div class="field"><label>Nội dung</label><textarea id="admin-recognition-message" class="textarea" placeholder="Chia sẻ cột mốc, đóng góp hoặc điều Ahamove muốn ghi nhận và cảm ơn ở nhân sự..."></textarea></div>
        <div class="field admin-visibility-field"><label>Ai có thể xem AHAKUDOS này?</label>
          <div class="visibility-options">
            <button type="button" class="visibility-option selected" data-admin-visibility="public"><span class="visibility-icon">◎</span><div><b>CỘNG ĐỒNG KUDOS</b><p>Hiển thị họ tên + phòng ban người gửi sau khi Admin duyệt; không có chế độ ẩn danh.</p></div><i>✓</i></button>
@@ -1540,7 +1532,7 @@ function adminRecognition(){
          </div>
          <div id="admin-bg-list">${adminBgListHtml()}</div>
        </div>
-       <div class="admin-recognition-note"><span>ⓘ</span><p><b>AHAKUDOS từ Admin</b> là lớp ghi nhận chính thức của chương trình. Background được chọn sẽ đi cùng email người nhận và bản lưu trong Hồ sơ KUDOS.</p></div>
+       <div class="admin-recognition-note"><span>ⓘ</span><p><b>AHAKUDOS từ Admin</b> là lời ghi nhận và cảm ơn chính thức của chương trình. Background được chọn sẽ đi cùng email người nhận và bản lưu trong Hồ sơ KUDOS.</p></div>
        <div class="form-actions"><button class="btn secondary" id="admin-recognition-preview">Xem trước</button><button class="btn primary" id="admin-recognition-send">Gửi AHAKUDOS</button></div>
      </article>
      <aside class="card admin-recognition-preview">
@@ -1548,7 +1540,7 @@ function adminRecognition(){
        <div class="recipient-preview" id="admin-recipient-preview"><div class="mini-avatar">@</div><div><b>Chưa chọn người nhận</b><span>Nhập email nhân sự để tìm kiếm</span></div></div>
        <div class="kudos-preview-card admin-kudos-preview" id="admin-preview-card"></div>
        <div class="preview-visibility" id="admin-preview-visibility">◎ CỘNG ĐỒNG KUDOS</div>
-       <div class="admin-email-preview-note"><span>✉</span><div><b>Email thông báo</b><p>Sau khi Admin duyệt, người nhận nhận email thông báo (không chứa nội dung) và mở lời ghi nhận trong AHAKUDOS với mẫu thiệp này.</p></div></div>
+       <div class="admin-email-preview-note"><span>✉</span><div><b>Email thông báo</b><p>Sau khi Admin duyệt, người nhận nhận email thông báo (không chứa nội dung) và mở lời ghi nhận và cảm ơn trong AHAKUDOS với mẫu thiệp này.</p></div></div>
      </aside>
    </div>
  </section>`;
@@ -1627,7 +1619,7 @@ function adminOps(){
  const missingDob=(mi.missingOptional||[]).includes('dob');
  const unscheduled=[...up.birthdays.map(r=>[r,'birthday']),...up.anniversaries.map(r=>[r,'anniversary'])].filter(([r,t])=>!scheduleFor(r.email,t,r.date));
  return `<section class="page active">
-   <div class="page-head"><div><div class="kicker">SINH NHẬT & THÂM NIÊN</div><h1>Cột mốc sắp tới từ Master Data</h1><p class="page-sub">Danh sách lấy trực tiếp từ tab DATA (Date of Birth, Onboard Day) trong ${Number(up.windowDays||30)} ngày tới. Admin review nội dung, chọn giờ và tick tự động gửi — hệ thống gửi AHAKUDOS + email đúng giờ.</p></div></div>
+   <div class="page-head"><div><div class="kicker">SINH NHẬT & THÂM NIÊN</div><h1>Cột mốc sắp tới</h1><p class="page-sub">Danh sách lấy trực tiếp từ tab DATA (Date of Birth, Onboard Day) trong ${Number(up.windowDays||30)} ngày tới. Admin review nội dung, chọn giờ và tick tự động gửi — hệ thống gửi AHAKUDOS + email đúng giờ.</p></div></div>
    <div class="ops-auto ${ADMIN.autoSend?'is-on':'is-off'}"><b>${ADMIN.autoSend?'● Tự động gửi đang BẬT':'○ Tự động gửi đang TẮT'}</b><span>${ADMIN.autoSend?'Hệ thống kiểm tra lịch mỗi 15 phút và gửi đúng giờ đã hẹn.':'Lịch vẫn được lưu, nhưng chỉ gửi khi bật: trong Apps Script chạy hàm <code>batTuDongGui</code> (một lần).'}</span>${unscheduled.length?`<button class="btn secondary" data-ops-bulk>Hẹn giờ tất cả (${unscheduled.length}) · nội dung mẫu, 09:00</button>`:''}</div>
    <div class="milestone-admin-summary">
      <article class="card milestone-summary-card"><div class="milestone-summary-icon">🎂</div><div><span>Sinh nhật sắp tới</span><strong>${up.birthdays.length}</strong><small>${missingDob?'DATA chưa có cột Date of Birth':'từ cột Date of Birth'}</small></div></article>
@@ -1795,14 +1787,14 @@ function showEmployeeHomeIntroBanner(){
  overlay.innerHTML=`
    <div class="employee-home-intro-banner centered-layout">
      <button class="home-intro-close" aria-label="Đóng">×</button>
-     <div class="home-intro-header"><div class="home-intro-brandmark">${logo(true)}</div><div class="kicker">CHÀO MỪNG ĐẾN VỚI AHAKUDOS</div><p>AHAKUDOS là nơi bạn gửi lời ghi nhận đến đồng nghiệp, theo dõi những lời cảm ơn đang lan tỏa trong công ty và lưu lại hành trình ghi nhận của chính mình.</p></div>
+     <div class="home-intro-header"><div class="home-intro-brandmark">${logo(true)}</div><div class="kicker">CHÀO MỪNG ĐẾN VỚI AHAKUDOS</div><p>AHAKUDOS là nơi bạn gửi lời ghi nhận và cảm ơn đến đồng nghiệp, theo dõi những lời cảm ơn đang lan tỏa trong công ty và lưu lại hành trình ghi nhận và cảm ơn của chính mình.</p></div>
      <div class="home-intro-card-grid">
-       <div class="intro-showcase-card card-send"><div class="intro-showcase-icon" aria-hidden="true">🧡</div><h3>Gửi KUDOS</h3><p>Viết lời ghi nhận cho một hành động cụ thể mà bạn trân trọng ở đồng nghiệp.</p><button class="intro-showcase-btn" data-home-intro-action="send">Gửi ngay</button></div>
-       <div class="intro-showcase-card card-feed"><div class="intro-showcase-icon" aria-hidden="true">🚀</div><h3>CỘNG ĐỒNG KUDOS</h3><p>Khám phá những lời ghi nhận đã được Admin duyệt để hiển thị công khai.</p><button class="intro-showcase-btn" data-home-intro-action="feed">Khám phá</button></div>
+       <div class="intro-showcase-card card-send"><div class="intro-showcase-icon" aria-hidden="true">🧡</div><h3>Gửi KUDOS</h3><p>Viết lời ghi nhận và cảm ơn cho một hành động cụ thể mà bạn trân trọng ở đồng nghiệp.</p><button class="intro-showcase-btn" data-home-intro-action="send">Gửi ngay</button></div>
+       <div class="intro-showcase-card card-feed"><div class="intro-showcase-icon" aria-hidden="true">🚀</div><h3>CỘNG ĐỒNG KUDOS</h3><p>Khám phá những lời ghi nhận và cảm ơn đã được Admin duyệt để hiển thị công khai.</p><button class="intro-showcase-btn" data-home-intro-action="feed">Khám phá</button></div>
        <div class="intro-showcase-card card-profile"><div class="intro-showcase-icon" aria-hidden="true">🏆</div><h3>Hồ sơ KUDOS</h3><p>Xem lại những KUDOS bạn đã gửi, đã nhận và giữ lại để đọc về sau.</p><button class="intro-showcase-btn" data-home-intro-action="profile">Xem thêm</button></div>
        <div class="intro-showcase-card card-milestone"><div class="intro-showcase-icon" aria-hidden="true">🎁</div><h3>Lời chúc đặc biệt</h3><p>Gửi lời chúc cho sinh nhật và những dấu mốc đặc biệt của đồng nghiệp.</p><button class="intro-showcase-btn" data-home-intro-action="explore">Đã rõ</button></div>
      </div>
-     <div class="home-intro-bottom-note">Bạn có thể bắt đầu bằng một lời ghi nhận nhỏ, nhưng đó có thể là điều rất ý nghĩa với người nhận.</div>
+     <div class="home-intro-bottom-note">Bạn có thể bắt đầu bằng một lời ghi nhận và cảm ơn nhỏ, nhưng đó có thể là điều rất ý nghĩa với người nhận.</div>
    </div>`;
  document.body.appendChild(overlay);
  requestAnimationFrame(()=>overlay.classList.add('show'));
@@ -1828,7 +1820,7 @@ function bindHandbookUI(){
    if(!q){hide();return;}
    const pool=state.mode==='employee'?employees.filter(e=>e.email!==me().email):employees;
    const matches=pool.filter(e=>normalize(e.name+' '+e.email+' '+e.dept).includes(q)).slice(0,5);
-   results.innerHTML=matches.length?matches.map(e=>`<button class="recipient-suggestion" data-directory-email="${escapeHtml(e.email)}">${miniAvatar(e.email,e.name)}<div><b>${escapeHtml(e.name)}</b><span>${escapeHtml(e.email)}</span><em>${escapeHtml(e.dept)}</em></div><i aria-hidden="true">↗</i></button>`).join(''):'<div class="recipient-no-result">Không có đồng nghiệp phù hợp trong Master Data.</div>';
+   results.innerHTML=matches.length?matches.map(e=>`<button class="recipient-suggestion" data-directory-email="${escapeHtml(e.email)}">${miniAvatar(e.email,e.name)}<div><b>${escapeHtml(e.name)}</b><span>${escapeHtml(e.email)}</span><em>${escapeHtml(e.dept)}</em></div><i aria-hidden="true">↗</i></button>`).join(''):'<div class="recipient-no-result">Không tìm thấy đồng nghiệp phù hợp.</div>';
    results.classList.remove('hidden');input.setAttribute('aria-expanded','true');
    results.querySelectorAll('[data-directory-email]').forEach(btn=>btn.addEventListener('click',()=>{
     const email=btn.dataset.directoryEmail;
@@ -1846,7 +1838,7 @@ function bindHandbookUI(){
  const adminPreview=document.querySelector('#admin-recognition-preview');
  if(adminPreview)adminPreview.addEventListener('click',()=>{document.querySelector('.admin-recognition-preview')?.scrollIntoView({behavior:'smooth',block:'start'});});
  document.querySelectorAll('[data-modal="rules"]').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelector('#modal-root').innerHTML=`<div class="modal-backdrop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="hb-rules-title"><button class="modal-close" aria-label="Đóng">×</button><div class="kicker">GỬI KUDOS</div><h2 id="hb-rules-title">Quy tắc ghi nhận</h2><div class="rules"><div class="rule"><b>Người nhận</b><span>Tìm email Ahamove trong Master Data; nếu không có mail công ty, tick lựa chọn và nhập thông tin người nhận thủ công.</span></div><div class="rule"><b>Nội dung</b><span>Theo Format tiêu chuẩn:<span class="rule-list"><span><b>01</b> Khoảnh khắc khiến bạn muốn ghi nhận</span><span><b>02</b> Sự hỗ trợ / Năng lượng mà bạn đã nhận được</span></span>Thư ký KUDOS sẽ hỗ trợ nếu nội dung KUDOS chưa đủ woah.</span></div><div class="rule"><b>Giá trị cốt lõi</b><span>Chọn từ 1 đến 3 giá trị (tham khảo định nghĩa ngay tại ô chọn):<span class="rule-list"><span><b>⚡ Tốc độ</b> · <b>🤝 Đồng hành</b> · <b>💡 Đổi mới</b></span></span></span></div><div class="rule"><b>KUDOS Khác</b><span><span class="rule-list"><span><b>🎂 Sinh nhật</b> — gửi trong vòng 2 ngày trước/sau ngày sinh.</span><span><b>✦ Thâm niên</b> — gửi trong vòng 2 ngày trước/sau ngày vào Ahamove (từ 1 năm).</span><span><b>✎ Dịp khác</b> — tự đặt tên dịp (Thăng chức, Chào mừng thành viên mới…).</span></span>Ngày lấy theo Master Data, hoặc nhập tay nếu người nhận không có trong Master Data. Giá trị cốt lõi không bắt buộc.</span></div><div class="rule"><b>Phạm vi</b><span>Mặc định được đề xuất lên CỘNG ĐỒNG KUDOS và chỉ hiển thị sau khi Admin duyệt.</span></div><div class="rule"><b>Hạn mức gửi</b><span>Mỗi nhân sự trong Master Data được gửi tối đa 5 KUDOS mỗi ngày.</span></div></div><button class="btn primary wide hb-rules-close">Đã hiểu</button></div></div>`;
+  document.querySelector('#modal-root').innerHTML=`<div class="modal-backdrop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="hb-rules-title"><button class="modal-close" aria-label="Đóng">×</button><div class="kicker">GỬI KUDOS</div><h2 id="hb-rules-title">Quy tắc ghi nhận và cảm ơn</h2><div class="rules"><div class="rule"><b>Người nhận</b><span>Tìm theo email Ahamove; nếu không có mail công ty, tick lựa chọn và nhập thông tin người nhận thủ công.</span></div><div class="rule"><b>Nội dung</b><span>Theo Format tiêu chuẩn:<span class="rule-list"><span><b>01</b> Khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn</span><span><b>02</b> Sự hỗ trợ / Năng lượng mà bạn đã nhận được</span></span>Thư ký KUDOS sẽ hỗ trợ nếu nội dung KUDOS chưa đủ woah.</span></div><div class="rule"><b>Giá trị cốt lõi</b><span>Chọn từ 1 đến 3 giá trị (tham khảo định nghĩa ngay tại ô chọn):<span class="rule-list"><span><b>⚡ Tốc độ</b> · <b>🤝 Đồng hành</b> · <b>💡 Đổi mới</b></span></span></span></div><div class="rule"><b>KUDOS Khác</b><span><span class="rule-list"><span><b>🎂 Sinh nhật</b> — gửi trong vòng 2 ngày trước/sau ngày sinh.</span><span><b>✦ Thâm niên</b> — gửi trong vòng 2 ngày trước/sau ngày vào Ahamove (từ 1 năm).</span><span><b>✎ Dịp khác</b> — tự đặt tên dịp (Thăng chức, Chào mừng thành viên mới…).</span></span>Ngày được lấy tự động, hoặc nhập tay nếu người nhận không có mail công ty. Giá trị cốt lõi không bắt buộc.</span></div><div class="rule"><b>Phạm vi</b><span>Mặc định được đề xuất lên CỘNG ĐỒNG KUDOS và chỉ hiển thị sau khi Admin duyệt.</span></div><div class="rule"><b>Hạn mức gửi</b><span>Mỗi nhân sự được gửi tối đa 5 KUDOS mỗi ngày.</span></div></div><button class="btn primary wide hb-rules-close">Đã hiểu</button></div></div>`;
   document.querySelectorAll('.modal-close,.hb-rules-close').forEach(b=>b.addEventListener('click',()=>document.querySelector('#modal-root').innerHTML=''));
  }));
 }
@@ -1907,7 +1899,7 @@ function bindAdminRecognition(){
  [manualName,manualDept,manualEmail].forEach(el=>el?.addEventListener('input',syncManualPreview));
  emailInput.addEventListener('input',()=>{if(manualRecipient)return;selectedEmployee=null;renderEmployee(null);const q=emailInput.value.trim().toLowerCase();if(!q){suggestions.classList.add('hidden');suggestions.innerHTML='';return}const matches=employees.filter(e=>e.email.toLowerCase().includes(q)).slice(0,5);suggestions.innerHTML=matches.length?matches.map(e=>`<button type="button" class="recipient-suggestion" data-admin-email="${escapeHtml(e.email)}">${miniAvatar(e.email,e.name)}<div><b>${escapeHtml(e.name)}</b><span>${escapeHtml(e.email)}</span><em>${escapeHtml(e.dept)}</em></div></button>`).join(''):'<div class="recipient-no-result">Không tìm thấy email phù hợp. Có thể tick “không có mail công ty”.</div>';suggestions.classList.remove('hidden');suggestions.querySelectorAll('[data-admin-email]').forEach(btn=>btn.addEventListener('click',()=>{const emp=employees.find(e=>e.email===btn.dataset.adminEmail);emailInput.value=emp.email;suggestions.classList.add('hidden');renderEmployee(emp);}));});
  emailInput.addEventListener('blur',()=>setTimeout(()=>suggestions.classList.add('hidden'),150));
- document.querySelectorAll('[data-recognition-type]').forEach(btn=>btn.addEventListener('click',()=>{selectedType=btn.dataset.recognitionType;document.querySelectorAll('[data-recognition-type]').forEach(x=>x.classList.toggle('selected',x===btn));const defaults={acting:'Cảm ơn bạn đã chủ động đảm nhận thêm một vai trò',promotion:'Chúc mừng một bước phát triển mới',trainer:'Cảm ơn bạn đã đồng hành và phát triển người khác',project:'Ghi nhận một dấu mốc đáng nhớ của dự án',campaign:'Cảm ơn đóng góp của bạn cho hoạt động chung',other:'Một điều đáng được Ahamove ghi nhận'};title.value=defaults[selectedType]||defaults.other;updatePreview();}));
+ document.querySelectorAll('[data-recognition-type]').forEach(btn=>btn.addEventListener('click',()=>{selectedType=btn.dataset.recognitionType;document.querySelectorAll('[data-recognition-type]').forEach(x=>x.classList.toggle('selected',x===btn));const defaults={acting:'Cảm ơn bạn đã chủ động đảm nhận thêm một vai trò',promotion:'Chúc mừng một bước phát triển mới',trainer:'Cảm ơn bạn đã đồng hành và phát triển người khác',project:'Ghi nhận và cảm ơn một dấu mốc đáng nhớ của dự án',campaign:'Cảm ơn đóng góp của bạn cho hoạt động chung',other:'Một điều đáng được Ahamove ghi nhận và cảm ơn'};title.value=defaults[selectedType]||defaults.other;updatePreview();}));
  function bindGallery(){
   document.querySelectorAll('[data-admin-template]').forEach(btn=>btn.addEventListener('click',()=>{selectedTemplate=btn.dataset.adminTemplate;document.querySelectorAll('[data-admin-template]').forEach(x=>{x.classList.toggle('selected',x===btn);x.setAttribute('aria-pressed',String(x===btn));});updatePreview();}));
   document.querySelector('#admin-bg-upload-open')?.addEventListener('click',()=>{document.querySelector('#admin-bg-upload').classList.remove('hidden');document.querySelector('#admin-bg-name').focus();});
@@ -1941,7 +1933,7 @@ function bindAdminRecognition(){
  document.querySelector('#admin-recognition-preview').addEventListener('click',()=>{updatePreview();toast('Đã cập nhật bản xem trước.')});
  document.querySelector('#admin-recognition-send').addEventListener('click',async()=>{
   if(manualRecipient){const name=manualName.value.trim(),dept=manualDept.value.trim(),email=manualEmail.value.trim().toLowerCase();if(name.length<2||dept.length<2||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){toast('Điền đủ họ tên, phòng ban/đơn vị và email liên hệ hợp lệ.');return;}selectedEmployee={name,dept,email,manual:true};}
-  if(!selectedEmployee||message.value.trim().length<20){toast('Chọn người nhận và viết lời ghi nhận trước.');return;}
+  if(!selectedEmployee||message.value.trim().length<20){toast('Chọn người nhận và viết lời ghi nhận và cảm ơn trước.');return;}
   const btn=document.querySelector('#admin-recognition-send');btn.disabled=true;
   const payload={type:'admin',recipientEmail:selectedEmployee.email,recipientManual:!!selectedEmployee.manual,recipientName:selectedEmployee.name,recipientDept:selectedEmployee.dept,message:message.value.trim(),values:[],templateId:selectedTemplate,visibility:selectedVisibility};
   const fp=JSON.stringify(payload);if(!window.__ahakudosAdminPending||window.__ahakudosAdminPending.fp!==fp)window.__ahakudosAdminPending={fp,id:uid()};payload.requestId=window.__ahakudosAdminPending.id;
@@ -1960,7 +1952,7 @@ function bindAdminRecognition(){
  }
 }
 function showAdminRecognitionSuccess(employee,title,visibility='public'){
- document.querySelector('#modal-root').innerHTML=`<div class="modal-backdrop"><div class="modal admin-recognition-success"><div class="success-sticker"><span>✨</span><i>✦</i><i>★</i><i>●</i></div><div class="kicker">AHAKUDOS ĐÃ ĐƯỢC LƯU</div><h2>${escapeHtml(title||'Lời ghi nhận đã được lưu')}</h2><p>AHAKUDOS đã được lưu và sẽ xuất hiện trong Hồ sơ KUDOS của <b>${escapeHtml(employee.name)}</b>.</p><div class="sent-visibility-detail ${visibility==='public'?'public':'private'}">${visibility==='public'?'◎ CỘNG ĐỒNG KUDOS · Chờ Admin duyệt':'● Chỉ người nhận biết · Không hiển thị trên CỘNG ĐỒNG KUDOS'}</div><div class="email-delivery-note"><span>✉</span><div><b>Chờ Admin duyệt</b><p>AHAKUDOS được đưa vào hàng chờ duyệt. Sau khi duyệt, email thông báo sẽ gửi tới <strong>${escapeHtml(employee.email)}</strong>.</p></div></div><button class="btn primary wide admin-recognition-done">Hoàn tất</button></div></div>`;
+ document.querySelector('#modal-root').innerHTML=`<div class="modal-backdrop"><div class="modal admin-recognition-success"><div class="success-sticker"><span>✨</span><i>✦</i><i>★</i><i>●</i></div><div class="kicker">AHAKUDOS ĐÃ ĐƯỢC LƯU</div><h2>${escapeHtml(title||'Lời ghi nhận và cảm ơn đã được lưu')}</h2><p>AHAKUDOS đã được lưu và sẽ xuất hiện trong Hồ sơ KUDOS của <b>${escapeHtml(employee.name)}</b>.</p><div class="sent-visibility-detail ${visibility==='public'?'public':'private'}">${visibility==='public'?'◎ CỘNG ĐỒNG KUDOS · Chờ Admin duyệt':'● Chỉ người nhận biết · Không hiển thị trên CỘNG ĐỒNG KUDOS'}</div><div class="email-delivery-note"><span>✉</span><div><b>Chờ Admin duyệt</b><p>AHAKUDOS được đưa vào hàng chờ duyệt. Sau khi duyệt, email thông báo sẽ gửi tới <strong>${escapeHtml(employee.email)}</strong>.</p></div></div><button class="btn primary wide admin-recognition-done">Hoàn tất</button></div></div>`;
  launchConfetti();
  document.querySelector('.admin-recognition-done').addEventListener('click',()=>{document.querySelector('#modal-root').innerHTML='';state.page='admin-home';render()});
 }
@@ -1978,8 +1970,8 @@ function qualityCoach(text,ctx){
  const who=name?` ${name}`:'';
  const cheers=['Đỉnh nóc kịch trần! 🚀 KUDOS này đủ woah để gửi rồi đó ✨','KUDOS đủ woah để gửi rồi đó ✨ Gửi thôi nào!','Tuyệt cú mèo! 🧡 Có khoảnh khắc, có năng lượng — đồng nghiệp sẽ vui lắm đây.'];
  let nudge;
- if(len===0){nudge=`Chào bạn 👋 Thư ký đây! Kể mình nghe <b>khoảnh khắc</b> khiến bạn muốn ghi nhận${who} nha.`;}
- else if(len>=12&&!q.has.about){nudge=`Hình như nội dung này chưa nói về đồng nghiệp bạn muốn ghi nhận 🤔 KUDOS là lời <b>cảm ơn / ghi nhận dành cho một người cụ thể</b> — thử kể điều${who||' đồng nghiệp'} đã làm cho bạn hoặc team nhé.`;}
+ if(len===0){nudge=`Chào bạn 👋 Thư ký đây! Kể mình nghe <b>khoảnh khắc</b> khiến bạn muốn ghi nhận và cảm ơn${who} nha.`;}
+ else if(len>=12&&!q.has.about){nudge=`Hình như nội dung này chưa nói về đồng nghiệp bạn muốn ghi nhận và cảm ơn 🤔 KUDOS là lời <b>ghi nhận và cảm ơn dành cho một người cụ thể</b> — thử kể điều${who||' đồng nghiệp'} đã làm cho bạn hoặc team nhé.`;}
  else if(!q.has.moment||len<25){nudge=`Lời cảm ơn ấm áp quá 🧡 Mình thêm một <b>khoảnh khắc cụ thể</b> nữa nhé — lúc nào,${who||' đồng nghiệp'} đã làm gì — để lời KUDOS thật đáng nhớ.`;}
  else if(!q.has.energy){nudge=`Sắp xong rồi nè ✨ Điều đó đã mang lại <b>sự hỗ trợ / năng lượng</b> gì cho bạn hoặc team? Thêm một câu thôi là chạm tim luôn.`;}
  else if(!q.ok){nudge=`Gần xong rồi 🌱 Thêm vài chi tiết nhỏ (khoảng ${KUDOS_QUALITY.minWords} từ trở lên) để${who||' đồng nghiệp'} cảm nhận rõ hơn sự chân thành của bạn nha.`;}
@@ -2014,7 +2006,7 @@ function runCoach(){
  const r=state.selectedRecipient;
  const out=qualityCoach(msg.value,{recipientFirst:r?r.name.split(' ').slice(-1)[0]:''});
  const nudge=document.querySelector('#coach-nudge');if(nudge)nudge.innerHTML=out.nudge;
- // Gợi ý Giá trị cốt lõi kèm lý do (chỉ làm nổi, không tự chọn). Không gợi ý khi nội dung chưa phải là lời ghi nhận.
+ // Gợi ý Giá trị cốt lõi kèm lý do (chỉ làm nổi, không tự chọn). Không gợi ý khi nội dung chưa phải là lời ghi nhận và cảm ơn.
  const text=msg.value,low=text.toLowerCase();
  const found={speed:[],together:[],innovation:[]};
  if(kudosQuality(text).has.about)Object.keys(VALUE_HINTS).forEach(v=>VALUE_HINTS[v].forEach(w=>{if(low.includes(w)&&found[v].length<3&&!found[v].includes(w))found[v].push(w);}));
@@ -2022,7 +2014,7 @@ function runCoach(){
  document.querySelectorAll('.culture-chip').forEach(c=>c.classList.remove('suggested'));
  sug.forEach(v=>document.querySelector(`[data-value="${v}"]`)?.classList.add('suggested'));
  const hint=document.querySelector('#ai-values');
- if(hint){hint.classList.toggle('has-suggest',!!sug.length);hint.innerHTML=sug.length?`<div class="value-suggest-title">✦ Thư ký gợi ý Giá trị cốt lõi</div><ul>${sug.map(v=>`<li><img src="${CULTURE_IMG(v)}" alt="" width="28" height="28" data-hide-on-error><span><b>${CULTURE[v]}</b> ${escapeHtml(VALUE_WHY[v](found[v]))}</span></li>`).join('')}</ul><p>Bạn có thể tham khảo gợi ý, nhưng giá trị được chọn vẫn do bạn quyết định.</p>`:'Viết nội dung KUDOS, Thư ký sẽ gợi ý Giá trị cốt lõi phù hợp kèm lý do. Bạn có thể tham khảo gợi ý, nhưng giá trị được chọn vẫn do bạn quyết định.';}
+ if(hint){hint.classList.toggle('has-suggest',!!sug.length);hint.innerHTML=sug.length?`<div class="value-suggest-title">✦ Thư ký gợi ý Giá trị cốt lõi</div><ul>${sug.map(v=>`<li><img src="${CULTURE_IMG(v)}" alt="" width="28" height="28" data-hide-on-error><span><b>${CULTURE[v]}</b> ${escapeHtml(VALUE_WHY[v](found[v]))}</span></li>`).join('')}</ul><p>Bạn có thể tham khảo gợi ý, nhưng giá trị được chọn vẫn do bạn quyết định.</p>`:'Thư ký sẽ gợi ý Giá trị cốt lõi phù hợp kèm lý do. Bạn có thể tham khảo gợi ý, nhưng giá trị được chọn vẫn do bạn quyết định.';}
 }
 function templateGalleryHtml(){
  const list=typeTemplates(state.kudosType);
@@ -2053,12 +2045,12 @@ function birthdayCheck(){
  if(state.manualRecipient){
    const v=(document.querySelector('#recipient-manual-dob')?.value||'').trim();md=/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(5):'';
    name=(document.querySelector('#recipient-manual-name')?.value||'').trim()||'người nhận';
-   if(!md)return {ok:false,msg:'Nhập '+o.manualLabel.toLowerCase()+' (người nhận không có trong Master Data).'};
+   if(!md)return {ok:false,msg:'Nhập '+o.manualLabel.toLowerCase()+' (người nhận không có mail công ty).'};
  }else{
    const r=state.selectedRecipient&&personByEmail(state.selectedRecipient.email);
    if(!r)return {ok:false,msg:'Chọn đồng nghiệp nhận KUDOS '+o.label+'.',neutral:true};
    name=r.name;md=r[o.field]||'';
-   if(!md)return {ok:false,msg:'Master Data chưa có '+o.dataName+' của '+name+'. Vui lòng liên hệ L&OD.'};
+   if(!md)return {ok:false,msg:'Hệ thống chưa có '+o.dataName+' của '+name+'. Vui lòng liên hệ L&OD.'};
  }
  const off=birthdayOffsetDays(md);
  if(off===null||Math.abs(off)>BIRTHDAY_WINDOW_DAYS)return {ok:false,msg:`${o.what} của ${name} là ${mdLabel(md)}. Chỉ gửi KUDOS ${o.label} trong vòng ${BIRTHDAY_WINDOW_DAYS} ngày trước hoặc sau ngày này.`};
@@ -2178,7 +2170,7 @@ async function send(){
  }else{
    const email=(document.querySelector('#recipient-email')?.value||'').trim().toLowerCase();
    const exact=employees.find(e=>e.email.toLowerCase()===email);
-   if(!exact||!state.selectedRecipient){toast('Hãy tìm và chọn đúng email đồng nghiệp trong Master Data.');return;}
+   if(!exact||!state.selectedRecipient){toast('Hãy tìm và chọn đúng email đồng nghiệp.');return;}
    if(exact.email===me().email){toast('Bạn không thể gửi cho chính mình.');return;}
    recipient=exact;
  }
@@ -2331,7 +2323,7 @@ const GLUE_SELECTOR='h1,h2,h3,h4,h5,p,li,label,button,a,span,b,strong,em,small,t
 function glueLastWords(root){
  if(!root)return;
  root.querySelectorAll(GLUE_SELECTOR).forEach(el=>{
-  if(el.closest('textarea,select,script,style,svg,.kd-card-msg'))return;
+  if(el.closest('textarea,select,script,style,svg,.kd-card-msg,.hb-nav'))return; // top menu: compound words only (see glueCompounds)
   const words=(el.textContent||'').trim().split(/\s+/);
   if(words.length<3)return;
   const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let last=null,n;
@@ -2341,8 +2333,20 @@ function glueLastWords(root){
   if(m)last.nodeValue=m[1]+'\u00A0'+m[2];
  });
 }
+// Vietnamese compound words (tuyệt vời, động lực, hành trình, đồng nghiệp…) must never be split across two lines:
+// the spaces inside them become no-break spaces. "… KUDOS" phrases are not glued inside the narrow top menu.
+const GLUE_WORDS='ghi nhận và cảm ơn|giá trị cốt lõi|hồ sơ kudos|cộng đồng kudos|thư ký kudos|gửi kudos|kudos mới|always moving|ảnh đại diện|sự hỗ trợ|ghi nhận|cảm ơn|người nhận|người gửi|nội dung|đồng nghiệp|cộng đồng|giá trị|cốt lõi|sinh nhật|thâm niên|thông báo|danh sách|hiển thị|phòng ban|nhân sự|lời nhắn|nhân viên|công ty|phù hợp|lan tỏa|lan toả|hệ thống|khoảnh khắc|hỗ trợ|hồ sơ|chia sẻ|riêng tư|hôm nay|đầu tiên|dữ liệu|chi tiết|hoạt động|bổ sung|tài khoản|năng lượng|đồng hành|tích cực|chúc mừng|lời chúc|kỷ niệm|xuất hiện|hành trình|phạm vi|liên hệ|kiểm tra|cập nhật|đặc biệt|bắt đầu|đóng góp|gợi ý|đại diện|thời gian|quản trị|thư ký|họ tên|công khai|toàn bộ|tối đa|chất lượng|xử lý|lưu trữ|ví dụ|giao diện|cột mốc|chủ động|phát triển|đáng nhớ|tốc độ|đổi mới|sắp tới|quyết định|tham khảo|chế độ|tìm kiếm|hạn mức|đăng nhập|thao tác|đồng đội|nội bộ|bộ phận|quy tắc|xem trước|trang chủ|kiểm duyệt|xác nhận|hộp thư|thăng chức|tuyệt vời|động lực|chân thành|trân trọng|ý nghĩa|mỗi ngày|ngày sinh|dự án|tiến độ|khách hàng|vấn đề|kiến thức|văn hoá|văn hóa|chương trình|nền tảng|mục tiêu|sự kiện|lời khen|trải nghiệm|hướng dẫn|người dùng|ghi chú|hàng chờ|cảm hứng|niềm vui|thành công|thành viên|trách nhiệm|vai trò|dấu ấn|dấu mốc|nổi bật|cá nhân|tổng quan|thống kê|báo cáo|lịch sử|trạng thái|tiêu chuẩn|mẫu thiệp|thật lòng|kết nối|sáng tạo|đánh giá|hiệu suất|thay thế|xứng đáng|nhìn thấy|đúng lúc|vận hành|trung tâm|không gian|sẵn sàng|sẵn lòng|kinh nghiệm|nhiệt tình|giải quyết|thông tin|hình ảnh|chuyển động|người ấy|nhân dịp|chào đón|kết hôn|em bé|hoàn thành|khám phá|tham gia|theo dõi|lựa chọn|tuỳ chọn|tùy chọn|mặc định|đề xuất|phản hồi|trả lời|xem lại|mở lại|lưu lại'.split('|').sort((a,b)=>b.length-a.length);
+const glueEsc=w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/ /g,'[ \u00A0]+');
+const glueRe=list=>new RegExp('(?<![\\p{L}\\p{M}])(?:'+list.map(glueEsc).join('|')+')(?![\\p{L}\\p{M}])','giu');
+const GLUE_RE=glueRe(GLUE_WORDS),GLUE_RE_NAV=glueRe(GLUE_WORDS.filter(w=>!/kudos$/.test(w)));
+function glueCompounds(root){
+ if(!root)return;
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||n.nodeValue.indexOf(' ')<0)return NodeFilter.FILTER_REJECT;return p.closest('textarea,input,select,script,style,[contenteditable="true"]')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;}});
+ const nodes=[];let n;while((n=walker.nextNode()))nodes.push(n);
+ nodes.forEach(t=>{const re=t.parentElement.closest('.nav-btn,.hb-nav')?GLUE_RE_NAV:GLUE_RE;const v=t.nodeValue.replace(re,m=>m.replace(/ /g,'\u00A0'));if(v!==t.nodeValue)t.nodeValue=v;});
+}
 let glueQueued=false;
-function queueGlue(){if(glueQueued)return;glueQueued=true;requestAnimationFrame(()=>{glueQueued=false;glueLastWords(document.body);});}
+function queueGlue(){if(glueQueued)return;glueQueued=true;setTimeout(()=>{glueQueued=false;glueCompounds(document.body);glueLastWords(document.body);},0);}
 const glueObserver=new MutationObserver(queueGlue);
 glueObserver.observe(document.body,{childList:true,subtree:true}); // text edits are characterData, so no feedback loop
 

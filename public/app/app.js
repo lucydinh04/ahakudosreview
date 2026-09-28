@@ -452,6 +452,34 @@ async function refreshGreetingCount(){
  finally{greetingBusy=false;}
 }
 function startGreetingRefresh(){if(greetingTimer)return;greetingTimer=setInterval(refreshGreetingCount,180000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshGreetingCount();});}
+// ---- Phòng ban: header dropdown → CỘNG ĐỒNG KUDOS filtered by department ----
+function kudosInDept(k,dept){return !dept||k.senderDept===dept||k.recipientDept===dept;}
+function deptList(){
+ const counts=new Map();
+ employees.forEach(e=>{if(e.dept&&!counts.has(e.dept))counts.set(e.dept,0);});
+ store.community.forEach(k=>[k.senderDept,k.recipientDept].filter(Boolean).forEach(d=>counts.set(d,0)));
+ counts.forEach((_,d)=>counts.set(d,store.community.filter(k=>kudosInDept(k,d)).length));
+ return [...counts.entries()].sort((a,b)=>a[0].localeCompare(b[0],'vi')).map(([name,n])=>({name,n}));
+}
+function deptPickerHtml(){
+ const cur=state.deptFilter||'';
+ return `<div class="hb-dept">
+  <button type="button" class="hb-dept-btn${cur?' is-active':''}" id="hb-dept-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hb-dept-list"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8L4 5z"/></svg><span>${cur?escapeHtml(cur):'Xem KUDOS theo phòng ban'}</span><i aria-hidden="true">▾</i></button>
+  <div class="hb-dept-list hidden" id="hb-dept-list" role="listbox" aria-label="Phòng ban">
+   <button type="button" role="option" class="hb-dept-opt${!cur?' is-selected':''}" data-dept="" aria-selected="${!cur}"><b>Tất cả phòng ban</b><em>${store.community.length}</em></button>
+   ${deptList().map(d=>`<button type="button" role="option" class="hb-dept-opt${cur===d.name?' is-selected':''}" data-dept="${escapeHtml(d.name)}" aria-selected="${cur===d.name}"><b>${escapeHtml(d.name)}</b><em>${d.n}</em></button>`).join('')}
+  </div>
+ </div>`;
+}
+function bindDeptPicker(){
+ const btn=document.querySelector('#hb-dept-btn'),list=document.querySelector('#hb-dept-list');
+ if(!btn||!list)return;
+ const close=()=>{list.classList.add('hidden');btn.setAttribute('aria-expanded','false');};
+ btn.addEventListener('click',e=>{e.stopPropagation();const open=list.classList.contains('hidden');list.classList.toggle('hidden',!open);btn.setAttribute('aria-expanded',String(open));if(open)(list.querySelector('.is-selected')||list.querySelector('button'))?.focus();});
+ list.querySelectorAll('[data-dept]').forEach(o=>o.addEventListener('click',()=>{state.deptFilter=o.dataset.dept||'';close();goToPage('public-feed');window.scrollTo(0,0);}));
+ list.addEventListener('keydown',e=>{const items=[...list.querySelectorAll('button')];const i=items.indexOf(document.activeElement);if(e.key==='Escape'){close();btn.focus();}if(e.key==='ArrowDown'){e.preventDefault();items[Math.min(items.length-1,i+1)]?.focus();}if(e.key==='ArrowUp'){e.preventDefault();items[Math.max(0,i-1)]?.focus();}});
+ if(!window.__ahaDeptDocClick){window.__ahaDeptDocClick=true;document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('.hb-dept')){const l=document.querySelector('#hb-dept-list');if(l){l.classList.add('hidden');document.querySelector('#hb-dept-btn')?.setAttribute('aria-expanded','false');}}});}
+}
 function contextbar(){
  const u=me();
  const firstName=escapeHtml((u.name||'bạn').split(' ').slice(-1)[0]);
@@ -459,7 +487,7 @@ function contextbar(){
  const employeeGreeting=`<b>Xin chào, ${firstName}! <span class="wave" aria-hidden="true">👋</span></b><span class="hb-greeting-line">${greetingLine()}</span>`;
  return `<div class="hb-contextbar">
   <div class="hb-context-left"><span class="hb-context-icon">${svg(state.mode==='employee'?'profile':'shield')}</span><div class="greeting">${state.mode==='employee'?employeeGreeting:'<b>Trung tâm quản trị</b><span>Không gian vận hành AHAKUDOS toàn công ty.</span>'}</div></div>
-  <div class="hb-context-right">${envBadge()}<div class="search hb-directory"><input id="hb-directory-search" placeholder="Tìm đồng nghiệp, phòng ban..." autocomplete="off" aria-label="Tìm đồng nghiệp" aria-expanded="false" aria-controls="hb-directory-results">${svg('search')}<div class="recipient-suggestions hidden" id="hb-directory-results"></div></div></div>
+  <div class="hb-context-right">${envBadge()}${state.mode==='employee'?deptPickerHtml():`<div class="search hb-directory"><input id="hb-directory-search" placeholder="Tìm đồng nghiệp, phòng ban..." autocomplete="off" aria-label="Tìm đồng nghiệp" aria-expanded="false" aria-controls="hb-directory-results">${svg('search')}<div class="recipient-suggestions hidden" id="hb-directory-results"></div></div>`}</div>
  </div>`;
 }
 function shell(content){
@@ -738,8 +766,10 @@ function communityCard(k,{badge='<span class="public-badge">◎ CỘNG ĐỒNG K
 }
 function inCommunity(k){return !!(k&&(k.isCommunity||(k.visibility==='public'&&modStatusOf(k)==='APPROVED')));}
 function publicFeedPage(){
- const list=publicFeedList();
+ const dept=state.deptFilter||'';
+ const list=publicFeedList().filter(k=>kudosInDept(k,dept));
  const cards=list.map(k=>communityCard(k)).join('');
+ const deptBar=dept?`<div class="dept-filter-bar"><span>Phòng ban: <b>${escapeHtml(dept)}</b> · ${list.length} KUDOS</span><button type="button" class="link-btn" data-dept-clear>Xem tất cả ✕</button></div>`:'';
  return `<section class="page active">
    <div class="page-head public-feed-head">
      <div>
@@ -748,8 +778,9 @@ function publicFeedPage(){
        <p class="page-sub">Những KUDOS được Admin duyệt cho phạm vi CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p>
      </div>
    </div>
+   ${deptBar}
    <div class="public-feed-layout">
-     <div class="public-feed-list" id="public-feed-list">${cards||`<div class="empty"><div class="icon">✦</div><h3>Chưa có CỘNG ĐỒNG KUDOS</h3><p>Những lời ghi nhận và cảm ơn được Admin duyệt cho CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p></div>`}</div>
+     <div class="public-feed-list" id="public-feed-list">${cards||(dept?`<div class="empty"><div class="icon">✦</div><h3>Chưa có KUDOS của ${escapeHtml(dept)}</h3><p>Những lời ghi nhận và cảm ơn của phòng ban này trên CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p></div>`:'')||`<div class="empty"><div class="icon">✦</div><h3>Chưa có CỘNG ĐỒNG KUDOS</h3><p>Những lời ghi nhận và cảm ơn được Admin duyệt cho CỘNG ĐỒNG KUDOS sẽ xuất hiện tại đây.</p></div>`}</div>
      <aside class="public-feed-rail">
        <article class="card public-feed-side-card">
          <div class="rail-title"><span>Lan tỏa hôm nay</span></div>
@@ -1819,6 +1850,7 @@ function schedulePublicFeedDemo(){
  },60000);
 }
 function bindPublicFeed(){
+ document.querySelector('[data-dept-clear]')?.addEventListener('click',()=>{state.deptFilter='';render();});
  document.querySelectorAll('[data-reaction][data-public-id]').forEach(btn=>btn.addEventListener('click',(e)=>{e.stopPropagation();toggleReaction(btn.dataset.publicId,btn.dataset.reaction);}));
  schedulePublicFeedDemo();
 }
@@ -1858,6 +1890,7 @@ function showEmployeeHomeIntroBanner(){
 
 // ---- Handbook directory search + rules modal ------------------------------
 function bindHandbookUI(){
+ bindDeptPicker();
  const input=document.querySelector('#hb-directory-search');
  const results=document.querySelector('#hb-directory-results');
  if(input&&results){

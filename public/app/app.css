@@ -4530,3 +4530,21 @@ p,li,small,.sub,blockquote,.coach-nudge,.home-def-v2__lead,.home-def-v2__support
  mask-image:linear-gradient(90deg,transparent var(--sx0),rgba(0,0,0,.35) calc(var(--sx0) + 6%),rgba(0,0,0,.85) calc(var(--sx0) + 13%),#000 calc(var(--sx0) + 20%),#000 calc(var(--sx1) - 20%),rgba(0,0,0,.85) calc(var(--sx1) - 13%),rgba(0,0,0,.35) calc(var(--sx1) - 6%),transparent var(--sx1)),linear-gradient(180deg,transparent var(--sy0),#000 calc(var(--sy0) + 16%));
  mask-composite:intersect}
 .kd-card-fullbg.kd-card-dark .kd-card-shade{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+
+/* Header: "Xem KUDOS theo phòng ban" dropdown (replaces the directory search for employees) */
+.hb-dept{position:relative;min-width:0}
+.hb-dept-btn{display:inline-flex;align-items:center;gap:10px;height:44px;max-width:340px;padding:0 16px;border-radius:999px;border:1px solid #d9e3ef;background:#fff;color:#1f3350;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(14,65,116,.06)}
+.hb-dept-btn svg{width:17px;height:17px;flex:none;color:#6b829a}
+.hb-dept-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-dept-btn i{font-style:normal;color:#6b829a;font-size:12px}
+.hb-dept-btn.is-active{border-color:#ff9a57;background:#fff5ee;color:#b44d12}
+.hb-dept-btn:hover{border-color:#b9cbe0}
+.hb-dept-list{position:absolute;right:0;top:calc(100% + 8px);z-index:1200;width:300px;max-height:360px;overflow:auto;padding:6px;border-radius:16px;background:#fff;border:1px solid #e3eaf3;box-shadow:0 18px 40px rgba(14,65,116,.16)}
+.hb-dept-list.hidden{display:none}
+.hb-dept-opt{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:none;font:inherit;font-size:14px;color:#1f3350;text-align:left;cursor:pointer}
+.hb-dept-opt b{font-weight:600}
+.hb-dept-opt em{font-style:normal;font-size:12px;font-weight:700;color:#6b829a;background:#f1f5fa;border-radius:999px;padding:2px 8px}
+.hb-dept-opt:hover,.hb-dept-opt:focus{background:#f3f7fc;outline:none}
+.hb-dept-opt.is-selected{background:#fff1e6;color:#b44d12}
+.dept-filter-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:12px 18px;border-radius:14px;background:#fff5ee;border:1px solid #ffd9bf;color:#7a3a10;font-size:14px}
+@media (max-width:640px){.hb-dept,.hb-dept-btn{width:100%;max-width:none}.hb-dept-list{left:0;right:0;width:auto}}

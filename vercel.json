@@ -10,13 +10,14 @@
     },
     "api/bridge.js": {
       "maxDuration": 60,
-      "includeFiles": "lib/review-snapshot.json"
+      "includeFiles": "{lib/review-snapshot.json,private/build-id.txt}"
     },
     "api/dev-login.js": {
       "maxDuration": 10
     },
     "api/health.js": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": "private/build-id.txt"
     },
     "api/background.js": {
       "maxDuration": 30

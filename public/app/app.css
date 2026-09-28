@@ -4447,3 +4447,86 @@ p,li,small,.sub,blockquote,.coach-nudge,.home-def-v2__lead,.home-def-v2__support
  .compose-hero .ch-copy h1.ch-title span{display:block}
 }
 @media (max-width:380px){.compose-hero .ch-copy h1.ch-title{font-size:23px}}
+
+/* ---- Backgrounds with a safe zone: content sits only in the empty area of the artwork (never over characters / slogans) ---- */
+/* Same treatment as the original backgrounds: one full-height horizontal fade band (transparent -> soft white -> transparent)
+   behind the text; it only fades in from the top (--sy0) when a slogan sits above the text. No frame. */
+.kd-card-fullbg.kd-card-zoned .kd-card-shade{display:block;inset:0;-webkit-backdrop-filter:blur(7px) saturate(1.05);backdrop-filter:blur(7px) saturate(1.05);
+ background:linear-gradient(90deg,rgba(var(--shrgb,255,255,255),0) var(--sx0),rgba(var(--shrgb,255,255,255),0.05) calc(var(--sx0) + 3.2%),rgba(var(--shrgb,255,255,255),0.18) calc(var(--sx0) + 6.4%),rgba(var(--shrgb,255,255,255),0.4) calc(var(--sx0) + 9.6%),rgba(var(--shrgb,255,255,255),0.64) calc(var(--sx0) + 12.8%),rgba(var(--shrgb,255,255,255),0.82) calc(var(--sx0) + 16%),rgba(var(--shrgb,255,255,255),0.9) calc(var(--sx0) + 22%),rgba(var(--shrgb,255,255,255),0.9) calc(var(--sx1) - 22%),rgba(var(--shrgb,255,255,255),0.82) calc(var(--sx1) - 16%),rgba(var(--shrgb,255,255,255),0.64) calc(var(--sx1) - 12.8%),rgba(var(--shrgb,255,255,255),0.4) calc(var(--sx1) - 9.6%),rgba(var(--shrgb,255,255,255),0.18) calc(var(--sx1) - 6.4%),rgba(var(--shrgb,255,255,255),0.05) calc(var(--sx1) - 3.2%),rgba(var(--shrgb,255,255,255),0) var(--sx1));
+ -webkit-mask-image:linear-gradient(180deg,transparent var(--sy0),rgba(0,0,0,.18) calc(var(--sy0) + 4%),rgba(0,0,0,.5) calc(var(--sy0) + 8%),rgba(0,0,0,.82) calc(var(--sy0) + 12%),#000 calc(var(--sy0) + 16%));mask-image:linear-gradient(180deg,transparent var(--sy0),rgba(0,0,0,.18) calc(var(--sy0) + 4%),rgba(0,0,0,.5) calc(var(--sy0) + 8%),rgba(0,0,0,.82) calc(var(--sy0) + 12%),#000 calc(var(--sy0) + 16%))}
+.kd-card-fullbg.kd-card-zoned .kd-card-content{position:absolute!important;left:var(--zl);top:var(--zt);width:var(--zw)!important;height:var(--zh)!important;margin:0!important;padding:1.2cqw 1.6cqw!important;justify-content:center;background:none;border:0;box-shadow:none}
+.kd-card-fullbg.kd-card-zoned .kd-template-brand{margin-bottom:1cqw}
+.kd-card-fullbg.kd-card-zoned .kd-card-label{margin-bottom:.9cqw}
+.kd-card-fullbg.kd-card-zoned .kd-sender-stack{margin-bottom:1cqw}
+/* Narrow cards (phone, small columns): full artwork on top, full content below — nothing is covered, text stays readable */
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked{aspect-ratio:auto!important;height:auto!important;flex-direction:column;background:var(--zbg,#FFF7EF)}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-bg{position:relative!important;inset:auto;height:auto!important;aspect-ratio:16/9}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-content{position:relative!important;left:auto;top:auto;width:auto!important;height:auto!important;margin:0!important;padding:14px 20px 22px!important;background:none;border:0;box-shadow:none;overflow:visible}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-shade{display:none}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-bg{-webkit-mask-image:linear-gradient(180deg,#000 94%,transparent 100%);mask-image:linear-gradient(180deg,#000 94%,transparent 100%)}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-template-brand{padding:6px 11px;margin-bottom:10px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-template-brand-logo img{height:18px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-template-brand-name{font-size:11px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-label{font-size:10px;margin-bottom:10px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-sender-stack{margin-bottom:10px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-sender-caption{font-size:9px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-sender-name{font-size:15px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-sender-dept{font-size:12px}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-msg,.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-card-msg[class*="kd-card-msg--"]{font-size:15px;line-height:1.6!important}
+.kd-card-fullbg.kd-card-zoned.kd-card-stacked .kd-values-block{margin-top:10px}
+
+/* Dark artwork (AI-ways Moving): the fade band is deep navy and the text is light, instead of washing the night sky with white */
+.kd-card-fullbg.kd-card-dark{--shrgb:10,30,88}
+.kd-card-fullbg.kd-card-dark .kd-card-label{color:#FFB27A}
+.kd-card-fullbg.kd-card-dark .kd-sender-caption,.kd-card-fullbg.kd-card-dark .kd-value-caption{color:#A9C0F0}
+.kd-card-fullbg.kd-card-dark .kd-sender-name{color:#FFFFFF}
+.kd-card-fullbg.kd-card-dark .kd-sender-dept{color:#CFDBF7}
+.kd-card-fullbg.kd-card-dark .kd-recipient-stack{border-color:rgba(255,255,255,.28)}
+.kd-card-fullbg.kd-card-dark .kd-card-msg{color:#FFFFFF;text-shadow:0 1px 2px rgba(0,10,40,.35)}
+.kd-card-fullbg.kd-card-dark .kd-value-chip{background:rgba(255,255,255,.14);color:#FFFFFF;border-color:rgba(255,255,255,.35)}
+
+/* "AHAKUDOS là gì?": each paragraph of the intro stands on its own */
+.hb-home .home-def-v2__copy > p.home-def-v2__lead{margin:0 0 16px}
+.hb-home .home-def-v2__copy > p.home-def-v2__support{margin:0 0 16px}
+.hb-home .home-def-v2__copy > p.home-def-v2__support:last-of-type{margin-bottom:0}
+@media (max-width:560px){.hb-home .home-def-v2__copy > p.home-def-v2__lead,.hb-home .home-def-v2__copy > p.home-def-v2__support{margin-bottom:12px}}
+/* Gửi KUDOS hero: "Ghi nhận và cảm ơn" / "điều tuyệt vời mỗi ngày!" on two lines at every width */
+.compose-hero .ch-copy h1.ch-title span{display:block;white-space:nowrap}
+@media (min-width:701px){.compose-hero .ch-copy h1.ch-title{font-size:clamp(26px,2.7vw,36px)}}
+
+/* "AHAKUDOS là gì?" as an infographic: one short lead + 3 visual points */
+.hb-home .home-def-v2__copy > p.home-def-v2__lead{font-size:17px;line-height:1.7;margin:0 0 20px;max-width:620px}
+.hb-home .home-def-v2__lead b{color:var(--def-navy,#0E4174)}
+.home-def-points{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.home-def-point{display:flex;flex-direction:column;gap:8px;padding:18px 16px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(14,65,116,.08);box-shadow:0 10px 24px rgba(14,65,116,.06)}
+.home-def-point__icon{display:inline-flex;align-items:center;justify-content:center;gap:2px;height:44px;min-width:44px;align-self:flex-start;padding:0 8px;border-radius:14px;background:#FFF1E6;font-size:22px;line-height:1}
+.home-def-point__icon--values{background:#EAF3FF}
+.home-def-point__icon--values img{width:26px;height:26px;object-fit:contain}
+.home-def-point b{font-size:15.5px;line-height:1.4;color:var(--def-navy,#0E4174)}
+.home-def-point span:not(.home-def-point__icon){font-size:14px;line-height:1.6;color:#4A5D75}
+@media (max-width:900px){.home-def-points{grid-template-columns:1fr}.home-def-point{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:12px}.home-def-point span:not(.home-def-point__icon){flex:1 1 100%}}
+
+/* "AHAKUDOS là gì?" — more compact */
+@media (min-width:901px){
+ .hb-home .home-def-v2{padding:28px 36px;gap:20px;grid-template-columns:minmax(0,1.8fr) minmax(0,1fr)}
+ .hb-home .home-def-v2__title{font-size:32px;margin:12px 0 10px}
+ .hb-home .home-def-v2__copy > p.home-def-v2__lead{font-size:15.5px;line-height:1.65;margin:0 0 16px;max-width:720px}
+ .hb-home .home-def-points{gap:12px}
+ .hb-home .home-def-point{padding:14px 14px 15px;gap:6px;border-radius:16px}
+ .hb-home .home-def-point__icon{height:36px;min-width:36px;border-radius:12px;font-size:18px}
+ .hb-home .home-def-point__icon--values img{width:22px;height:22px}
+ .hb-home .home-def-point b{font-size:14.5px}
+ .hb-home .home-def-point span:not(.home-def-point__icon){font-size:13.5px;line-height:1.55}
+ .hb-home .home-def-v2__note{margin-top:14px;padding:11px 16px}
+ .hb-home .home-def-v2__note p{font-size:13.5px}
+ .hb-home .home-def-v2__mascot-wrap{width:min(100%,280px)}
+ .hb-home .home-def-v2__slogan span{font-size:clamp(26px,2.6vw,38px)}
+}
+
+/* The blur must fade exactly like the tint band: mask = horizontal band (eased) × optional top fade */
+.kd-card-fullbg.kd-card-zoned .kd-card-shade{background:rgba(var(--shrgb,255,255,255),.8);
+ -webkit-mask-image:linear-gradient(90deg,transparent var(--sx0),rgba(0,0,0,.35) calc(var(--sx0) + 6%),rgba(0,0,0,.85) calc(var(--sx0) + 13%),#000 calc(var(--sx0) + 20%),#000 calc(var(--sx1) - 20%),rgba(0,0,0,.85) calc(var(--sx1) - 13%),rgba(0,0,0,.35) calc(var(--sx1) - 6%),transparent var(--sx1)),linear-gradient(180deg,transparent var(--sy0),#000 calc(var(--sy0) + 16%));
+ -webkit-mask-composite:source-in;
+ mask-image:linear-gradient(90deg,transparent var(--sx0),rgba(0,0,0,.35) calc(var(--sx0) + 6%),rgba(0,0,0,.85) calc(var(--sx0) + 13%),#000 calc(var(--sx0) + 20%),#000 calc(var(--sx1) - 20%),rgba(0,0,0,.85) calc(var(--sx1) - 13%),rgba(0,0,0,.35) calc(var(--sx1) - 6%),transparent var(--sx1)),linear-gradient(180deg,transparent var(--sy0),#000 calc(var(--sy0) + 16%));
+ mask-composite:intersect}
+.kd-card-fullbg.kd-card-dark .kd-card-shade{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}

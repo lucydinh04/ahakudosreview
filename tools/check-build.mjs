@@ -68,5 +68,15 @@ if (existsSync('public/app/app.css')) {
 }
 
 if (errors.length) { console.error('BUILD CHECK FAILED\n- ' + errors.join('\n- ')); process.exit(1); }
+// Content hash of everything the browser loads → private/build-id.txt (asset ?v= version for deploys without git).
+{
+  const { createHash } = await import('node:crypto');
+  const { writeFileSync } = await import('node:fs');
+  const h = createHash('sha256');
+  for (const f of walk('public').sort()) { h.update(f); h.update(readFileSync(f)); }
+  const id = h.digest('hex').slice(0, 12);
+  writeFileSync('private/build-id.txt', id + '\n');
+  notes.push('asset version ' + id);
+}
 console.log('AhaKudos build check OK (' + REQUIRED.length + ' required files, server + browser JS parsed, templates validated).');
 notes.forEach(n => console.log('note: ' + n));

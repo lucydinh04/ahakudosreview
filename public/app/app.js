@@ -15,9 +15,30 @@ const ART=window.AHAKUDOS_ART;
 const A={logoLight:BASE+'/branding/logo-light.png',logoDark:BASE+'/branding/logo-dark.png',logoMark:BASE+'/branding/logo-mark.png',kudosLogo:BASE+'/branding/ahamove-logo-kudos.png',mascotCutout:BASE+'/illustrations/mascot-cutout.png'};
 // Base KUDOS backgrounds are static files in /public/backgrounds; event backgrounds come from tab EVENTS.
 const BG=(()=>{
- const LIST=[{id:'wish',name:'Tri ân',sticker:'🧧',fallback:'#FFF4D8'},{id:'move',name:'Đồng đội',sticker:'🛵',fallback:'#FFF0DB'},{id:'birthday',name:'Sinh nhật',sticker:'🎂',fallback:'#FFE3EA'},{id:'tech',name:'Cảm hứng',sticker:'🤖',fallback:'#DDEEFF'}];
+ // retired: no longer offered in pickers, still rendered for KUDOS already sent with them.
+ const LIST=[// Order = picker order, grouped by colour tone (cream → warm orange → pink → light blue → deep blue). Birthday order: BIRTHDAY_TEMPLATE_IDS.
+  {id:'wish',name:'Tri ân',sticker:'🧧',fallback:'#FFF4D8',retired:true},
+  {id:'move',name:'Đồng đội',sticker:'🛵',fallback:'#FFF0DB',retired:true},
+  {id:'tech',name:'Cảm hứng',sticker:'🤖',fallback:'#DDEEFF',retired:true},
+  {id:'camon',name:'Cảm ơn vì đã đến',sticker:'💞',fallback:'#FBF3EA',ext:'webp',zone:[50,8,40,80],shade:[38,106,-30],tint:'255,249,240'},
+  {id:'coccoc',name:'Cốc cốc KUDOS tới',sticker:'🌸',fallback:'#FBEBD9',ext:'webp',zone:[6,8,46,82],shade:[-6,60,-30],tint:'255,247,236'},
+  {id:'tenpoint',name:'10 điểm không có nhưng',sticker:'🏅',fallback:'#FDF0DC',ext:'webp',zone:[4,7,52,84],shade:[-20,64,-30],tint:'255,248,234'},
+  {id:'proud',name:'Tớ tự hào về cậu',sticker:'🙌',fallback:'#FDE7D4',ext:'webp',zone:[4,6,49,86],shade:[-20,62,-30],tint:'255,244,234'},
+  {id:'chualanh',name:'KUDOS chữa lành',sticker:'🌱',fallback:'#FBF6EC',ext:'webp',zone:[48,10,44,80],shade:[41,114,-30],tint:'255,253,246'},
+  {id:'respect',name:'Respect',sticker:'😎',fallback:'#F8B4DE',ext:'webp',zone:[5,8,48,82],shade:[-20,58,-30],tint:'252,228,242'},
+  {id:'cheers',name:'Tuyệt vời, uống nào',sticker:'🥂',fallback:'#FBE3EC',ext:'webp',zone:[58,7,39,86],shade:[48,116,-30],tint:'252,234,243'},
+  {id:'dinhnoc',name:'Đỉnh nóc kịch trần',sticker:'👑',fallback:'#F8B9D4',ext:'webp',zone:[50,8,46,82],shade:[43,116,-30],tint:'252,230,242'},
+  {id:'maidet',name:'Mai Đẹt Ti Ni',sticker:'🌼',fallback:'#F8C2D2',ext:'webp',zone:[5,8,50,82],shade:[-20,60,-30],tint:'252,232,238'},
+  {id:'borntoslay',name:'Born to Slay',sticker:'😎',fallback:'#BDC2F7',ext:'webp',zone:[55,8,41,82],shade:[48,116,-30],tint:'238,238,255'},
+  {id:'amazing',name:'Ơ mây zing gút chóp',sticker:'👍',fallback:'#BFE0F8',ext:'webp',zone:[5,8,47,82],shade:[-20,60,-30],tint:'232,245,255'},
+  {id:'ikudos',name:'I KUDOS You',sticker:'💋',fallback:'#A9D8F8',ext:'webp',zone:[5,8,55,82],shade:[-20,64,-30],tint:'232,245,255'},
+  {id:'aidriven',name:'AI-Driven Company',sticker:'🤖',fallback:'#D6E8FB',ext:'webp',zone:[58,7,39,78],shade:[52,116,-30],tint:'238,246,255'},
+  {id:'codetask',name:'Đồng cam cộng task',sticker:'💻',fallback:'#E3ECFB',ext:'webp',zone:[56,9,41,80],shade:[47,116,-30],tint:'236,243,255'},
+  {id:'aiways',name:'AI-ways Moving',sticker:'🚀',fallback:'#0F2C7A',ext:'webp',zone:[46,11,50,70],shade:[38,116,-30],dark:true},
+  {id:'hpbd',name:'Happy Birthday',sticker:'🎉',fallback:'#FBEBDD',ext:'webp',zone:[5,8,45,82],shade:[-20,58,-30],tint:'255,246,236'},
+  {id:'birthday',name:'Sinh nhật',sticker:'🎂',fallback:'#FFE3EA'}];
  const byId={};LIST.forEach(t=>{byId[t.id]=t;});
- return {LIST,get(id){const t=byId[id]||LIST[0];return {id:t.id,name:t.name,sticker:t.sticker,fallback:t.fallback,url:BASE+'/backgrounds/'+t.id+'.png'};}};
+ return {LIST,get(id){const t=byId[id]||LIST[0];return {id:t.id,name:t.name,sticker:t.sticker,fallback:t.fallback,zone:t.zone||null,shade:t.shade||null,tint:t.tint||'',dark:!!t.dark,url:BASE+'/backgrounds/'+t.id+'.'+(t.ext||'png')+'?v='+encodeURIComponent(String(CONFIG.buildId||'1'))};}};
 })();
 function safeGet(key){try{return localStorage.getItem(key);}catch(e){return null;}}
 function safeSet(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);return true;}catch(e){return false;}}
@@ -61,7 +82,7 @@ catch(e){
 const legacyLinkId=new URLSearchParams(location.search).get('id')||''; // V28 emails used ?id=<kudosId>
 
 // The web app and Apps Script are deployed separately. If Apps Script is older, new features (e.g. Giá trị cốt lõi) fail with old errors.
-const REQUIRED_BACKEND='V30.17';
+const REQUIRED_BACKEND='V30.28';
 function backendOutdated(){const v=String((BOOT.config&&BOOT.config.version)||'');const m=v.match(/^V(\d+)\.(\d+)/),r=REQUIRED_BACKEND.match(/^V(\d+)\.(\d+)/);return !m||Number(m[1])<Number(r[1])||(Number(m[1])===Number(r[1])&&Number(m[2])<Number(r[2]));}
 if(backendOutdated())console.warn('[AHAKUDOS] Apps Script '+((BOOT.config&&BOOT.config.version)||'?')+' cũ hơn web app ('+REQUIRED_BACKEND+'). Dán Code.gs mới và tạo New version.');
 const PEOPLE=BOOT.people||[];
@@ -171,7 +192,10 @@ function buildKudosCard(k,opts){
    ?`<img class="kd-card-bg" src="${escapeHtml(bgUrl)}" alt="Background KUDOS ${escapeHtml(bg.name||'')}" loading="eager">`
    :`<div class="kd-card-bg kd-card-bg-fallback" aria-hidden="true"></div>`;
  const cardLabel=opts.mode==='public'?'NỘI DUNG KUDOS':'LỜI GHI NHẬN & CẢM ƠN DÀNH CHO BẠN';
- return `<div class="kd-card kd-card-fullbg tpl-${escapeHtml(bg.id||k.templateId||'wish')} ${opts.mode==='public'?'kd-card-public':''}">
+ const z=Array.isArray(bg.zone)&&bg.zone.length===4?bg.zone.map(Number):null;
+ const sh=z&&Array.isArray(bg.shade)&&bg.shade.length===3?bg.shade.map(Number):(z?[z[0]-8,z[0]+z[2]+8,-20]:null);
+ const zoneAttr=z?` style="--zl:${z[0]}%;--zt:${z[1]}%;--zw:${z[2]}%;--zh:${z[3]}%;--sx0:${sh[0]}%;--sx1:${sh[1]}%;--sy0:${sh[2]}%;${bg.tint&&/^[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/.test(bg.tint)?'--shrgb:'+bg.tint+';':''}--zbg:${escapeHtml(bg.fallback||'#FFF7EF')}"`:'';
+ return `<div class="kd-card kd-card-fullbg tpl-${escapeHtml(bg.id||k.templateId||'wish')} ${opts.mode==='public'?'kd-card-public':''}${z?' kd-card-zoned':''}${bg.dark?' kd-card-dark':''}"${zoneAttr}>
    ${bgLayer}
    <div class="kd-card-shade" aria-hidden="true"></div>
    <div class="kd-card-content">
@@ -272,7 +296,7 @@ const state={
   page:me().inMasterData===false&&BOOT.isAdmin?'admin-home':'employee-home',
   values:new Set(),
   kudosType:'recognition',
-  selectedTemplate:(BG.LIST[0]||{id:'wish'}).id,
+  selectedTemplate:'camon',
   sendVisibility:'public', // Nhân viên luôn đề xuất CỘNG ĐỒNG KUDOS; Admin kiểm soát trước khi publish.
   prefillRecipient:'',
   selectedRecipient:null,
@@ -300,34 +324,38 @@ function birthdaySuggestionsFor(currentEmail){
 }
 // Background templates = 4 ảnh 3D thật (backgrounds.js). Fallback nếu module vắng.
 const cardTemplates=(BG&&BG.LIST&&BG.LIST.length)
-  ? BG.LIST.map(t=>({id:t.id,name:t.name,sticker:t.sticker}))
+  ? BG.LIST.map(t=>({id:t.id,name:t.name,sticker:t.sticker,retired:!!t.retired}))
   : [{id:'warm',name:'Ấm áp',sticker:'🧡'}];
 // Background theo sự kiện (Admin quản lý) — chỉ hiện sự kiện đang kích hoạt trong picker.
 // Admin-uploaded backgrounds for special occasions (served privately via /api/background). Employees only render them.
 let CUSTOM_BGS=BOOT.backgrounds||[];
 function customBg(id){return CUSTOM_BGS.find(b=>b.id===id)||null;}
 function customBgTemplates(){return CUSTOM_BGS.filter(b=>b.status==='ACTIVE').map(b=>({id:b.id,name:b.name,sticker:'🎁',custom:true}));}
-function allTemplates(){return cardTemplates.slice();}
+// Only offer backgrounds the Apps Script accepts (web may be deployed before Code.gs is updated).
+function allTemplates(){const ok=Array.isArray(BOOT.templateIds)&&BOOT.templateIds.length?BOOT.templateIds:null;return cardTemplates.filter(t=>!t.retired&&(!ok||ok.includes(t.id)));}
+function firstTemplateId(){return (typeTemplates('recognition')[0]||{id:'camon'}).id;}
 // KUDOS type is an explicit choice; each type shows only its own backgrounds.
 const KUDOS_TYPES=[{id:'recognition',label:'Đồng nghiệp',icon:'👥',hint:'Ghi nhận và cảm ơn hành động, đóng góp của đồng nghiệp'},{id:'other',label:'Khác',icon:'🎁',hint:'Sinh nhật / Thâm niên / …'}];
 // Occasions under "Khác". Each occasion: the Master Data date it uses (or typed when the recipient is not in DATA) and a ±2-day window.
 const OCCASIONS=[
  {id:'birthday',label:'Sinh nhật',icon:'🎂',field:'birthday',manualLabel:'Ngày sinh người nhận',payloadKey:'recipientBirthday',dataName:'Date of Birth',
-  what:'Sinh nhật',placeholder:'Ví dụ: Chúc mừng sinh nhật bạn! Chúc bạn tuổi mới thật nhiều niềm vui, sức khỏe và những hành trình đáng nhớ cùng Ahamove.'},
+  what:'Sinh nhật',placeholder:'Ví dụ: Chúc mừng sinh nhật bạn! Chúc bạn tuổi mới thật nhiều niềm vui và sức khỏe 🎂'},
  {id:'anniversary',label:'Thâm niên',icon:'✦',field:'anniversary',manualLabel:'Ngày vào Ahamove của người nhận',payloadKey:'recipientOnboard',dataName:'Onboard Day',
-  what:'Ngày kỷ niệm vào Ahamove',placeholder:'Ví dụ: Cảm ơn bạn đã đồng hành cùng Ahamove thêm một năm. Chúc bạn tiếp tục có thêm nhiều dấu ấn và hành trình đáng nhớ phía trước.'},
+  what:'Ngày kỷ niệm vào Ahamove',placeholder:'Ví dụ: Cảm ơn bạn đã đồng hành cùng Ahamove thêm một năm, chúc bạn thêm nhiều dấu ấn đáng nhớ ✨'},
  // Dịp khác: người viết tự đặt tên dịp và nội dung (không có điều kiện ngày).
- {id:'custom',label:'Dịp khác',icon:'✎',custom:true,what:'Dịp',placeholder:'Ví dụ: Chúc mừng bạn đã chính thức trở thành Team Lead! Mình tin bạn sẽ tiếp tục truyền cảm hứng cho cả team trên chặng đường mới.'}
+ {id:'custom',label:'Dịp khác',icon:'✎',custom:true,what:'Dịp',placeholder:'Ví dụ: Chúc mừng bạn đã chính thức trở thành Team Lead! Chúc bạn thật nhiều thành công trên chặng đường mới 🎉'}
 ];
 const OCCASION_SUGGESTIONS=['Thăng chức','Chào mừng thành viên mới','Hoàn thành dự án','Chúc mừng kết hôn','Chào đón em bé','Chia tay đồng nghiệp'];
 function typeGroup(){return state.kudosType==='recognition'?'recognition':'other';}
 function isOccasion(){return !!occasionOf(state.kudosType);}
 function occasionOf(type){return OCCASIONS.find(o=>o.id===type)||null;}
 function kudosTypeLabel(t,k){const o=occasionOf(t);if(o&&o.custom&&k&&k.occasionLabel)return o.icon+' '+k.occasionLabel;return o?o.icon+' '+o.label:'👥 Đồng nghiệp';}
-const BIRTHDAY_TEMPLATE_IDS=(BOOT.config&&BOOT.config.birthdayTemplateIds)||['birthday'];
+const BIRTHDAY_TEMPLATE_IDS=(BOOT.config&&BOOT.config.birthdayTemplateIds)||['hpbd','birthday','cheers','dinhnoc'];
+// Backgrounds offered for both KUDOS Đồng nghiệp and KUDOS Sinh nhật.
+const SHARED_TEMPLATE_IDS=(BOOT.config&&BOOT.config.sharedTemplateIds)||['cheers','dinhnoc'];
 const BIRTHDAY_WINDOW_DAYS=Number(BOOT.config&&BOOT.config.birthdayWindowDays)||2;
-function typeTemplates(type){if(type==='other')type='birthday';return type==='birthday'?allTemplates().filter(t=>BIRTHDAY_TEMPLATE_IDS.includes(t.id)):allTemplates().filter(t=>!BIRTHDAY_TEMPLATE_IDS.includes(t.id));}
-function templateMeta(id){return allTemplates().concat(customBgTemplates()).find(t=>t.id===id)||cardTemplates[0];}
+function typeTemplates(type){if(type==='other')type='birthday';const all=allTemplates();if(type==='birthday')return BIRTHDAY_TEMPLATE_IDS.map(id=>all.find(t=>t.id===id)).filter(Boolean);return all.filter(t=>!BIRTHDAY_TEMPLATE_IDS.includes(t.id)||SHARED_TEMPLATE_IDS.includes(t.id));}
+function templateMeta(id){return cardTemplates.concat(customBgTemplates()).find(t=>t.id===id)||cardTemplates[0];}
 function bgFor(id){if(/^bg_[a-z0-9]{8,32}$/.test(String(id||''))){const c=customBg(id);return {id,name:c?c.name:'Background dịp đặc biệt',sticker:'🎁',fallback:'#FFF3E6',url:BASE+'/api/background?id='+encodeURIComponent(id)};}return BG?BG.get(id):null;}
 
 const icons={
@@ -406,16 +434,29 @@ function envBadge(){
  // Chỉ hiện ở development/staging để tránh nhầm môi trường. Production không có nhãn này.
  return CONFIG.env&&CONFIG.env!=='production'?`<span class="hb-demo-label" title="Môi trường ${escapeHtml(CONFIG.env)}"><i></i>${escapeHtml(String(CONFIG.env).toUpperCase())}</span>`:'';
 }
+// Greeting under "Xin chào": received-KUDOS count once there is at least one, otherwise the thank-you line.
+function greetingLine(){
+ const u=me(),tenureDays=employeeTenureDays(u),n=(store.received||[]).length;
+ if(isOnboardToday()||tenureDays===0)return 'Cùng khám phá AHAKUDOS — nơi mọi lời ghi nhận và cảm ơn được lưu lại ✨';
+ if(n>0)return `Chúc mừng bạn đã nhận được <strong class="tenure-days">${n.toLocaleString('vi-VN')}</strong> KUDOS 🎉`;
+ return tenureDays!==null?`Cảm ơn bạn đã đồng hành cùng Ahamove <strong class="tenure-days">${tenureDays.toLocaleString('vi-VN')}</strong> ngày.`:'Cảm ơn bạn đã đồng hành cùng Ahamove.';
+}
+// Keep the count fresh: every 3 minutes while the tab is visible and whenever the tab comes back.
+// Only the greeting text is patched (no full re-render), so a KUDOS being written is never lost.
+let greetingTimer=null,greetingBusy=false;
+async function refreshGreetingCount(){
+ if(greetingBusy||state.mode!=='employee'||document.visibilityState!=='visible'||sending)return;
+ greetingBusy=true;
+ try{await refreshEmployeeData();const el=document.querySelector('.hb-greeting-line');if(el)el.innerHTML=greetingLine();}
+ catch(e){console.warn('[AHAKUDOS] greeting refresh',e);}
+ finally{greetingBusy=false;}
+}
+function startGreetingRefresh(){if(greetingTimer)return;greetingTimer=setInterval(refreshGreetingCount,180000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshGreetingCount();});}
 function contextbar(){
  const u=me();
  const firstName=escapeHtml((u.name||'bạn').split(' ').slice(-1)[0]);
  const tenureDays=employeeTenureDays(u);
- const tenureLine=isOnboardToday()||tenureDays===0
-   ?'Cùng khám phá AHAKUDOS — nơi mọi lời ghi nhận và cảm ơn được lưu lại ✨'
-   :tenureDays!==null
-   ?`Cảm ơn bạn đã đồng hành cùng Ahamove <strong class="tenure-days">${tenureDays.toLocaleString('vi-VN')}</strong> ngày.`
-   :'Cảm ơn bạn đã đồng hành cùng Ahamove.';
- const employeeGreeting=`<b>Xin chào, ${firstName}! <span class="wave" aria-hidden="true">👋</span></b><span>${tenureLine}</span>`;
+ const employeeGreeting=`<b>Xin chào, ${firstName}! <span class="wave" aria-hidden="true">👋</span></b><span class="hb-greeting-line">${greetingLine()}</span>`;
  return `<div class="hb-contextbar">
   <div class="hb-context-left"><span class="hb-context-icon">${svg(state.mode==='employee'?'profile':'shield')}</span><div class="greeting">${state.mode==='employee'?employeeGreeting:'<b>Trung tâm quản trị</b><span>Không gian vận hành AHAKUDOS toàn công ty.</span>'}</div></div>
   <div class="hb-context-right">${envBadge()}<div class="search hb-directory"><input id="hb-directory-search" placeholder="Tìm đồng nghiệp, phòng ban..." autocomplete="off" aria-label="Tìm đồng nghiệp" aria-expanded="false" aria-controls="hb-directory-results">${svg('search')}<div class="recipient-suggestions hidden" id="hb-directory-results"></div></div></div>
@@ -567,10 +608,13 @@ const recvCount=rec.length, noJourneyYet=sentCount===0&&recvCount===0;
     <div class="home-def-v2__copy">
      <span class="home-def-v2__badge">GIỚI THIỆU AHAKUDOS</span>
      <h2 id="home-def-title" class="home-def-v2__title">AHAKUDOS <span>là gì?</span></h2>
-     <p class="home-def-v2__lead">AHAKUDOS là nền tảng ghi nhận và cảm ơn nội bộ của Ahamove, được xây dựng để giúp nhân viên dễ dàng ghi nhận và cảm ơn những hành động tích cực, đồng thời lan tỏa các giá trị cốt lõi trong công việc hằng ngày.</p>
-     <blockquote class="home-def-v2__quote"><span class="home-def-v2__quote-mark" aria-hidden="true">“</span><p>Khi một đồng nghiệp làm điều gì đó có ý nghĩa, đóng góp ấy xứng đáng được nhìn thấy và trân trọng.</p></blockquote>
-     <p class="home-def-v2__support">Đó có thể là khi một đồng nghiệp chủ động hỗ trợ bạn, giải quyết một vấn đề khó, chia sẻ kiến thức, đồng hành cùng team hoặc tạo ra một tác động tích cực.</p>
-     <div class="home-def-v2__note"><span class="home-def-v2__note-icon" aria-hidden="true">i</span><p>AHAKUDOS là chương trình văn hóa ghi nhận và cảm ơn, <strong>không thay thế hệ thống đánh giá hiệu suất.</strong></p></div>
+     <p class="home-def-v2__lead">AHAKUDOS là nền tảng <b>ghi nhận và cảm ơn</b> nội bộ của Ahamove, được xây dựng để giúp Ahamovers dễ dàng ghi nhận những hành động tích cực của đồng nghiệp và cùng nhau lan tỏa <b>Giá trị cốt lõi</b> của Ahamove trong công việc hằng ngày.</p>
+     <ol class="home-def-points" aria-label="AHAKUDOS trong 3 ý">
+      <li class="home-def-point"><span class="home-def-point__icon" aria-hidden="true">🤝</span><b>Ghi nhận hành động tích cực</b><span>Chủ động hỗ trợ, cùng giải quyết vấn đề khó, chia sẻ kiến thức, đồng hành cùng team.</span></li>
+      <li class="home-def-point"><span class="home-def-point__icon home-def-point__icon--values" aria-hidden="true">${['speed','together','innovation'].map(v=>`<img src="${CULTURE_IMG(v)}" alt="" width="28" height="28" data-hide-on-error>`).join('')}</span><b>Gắn với Giá trị cốt lõi</b><span>Mỗi KUDOS gắn với một hoặc nhiều giá trị: Tốc độ · Đồng hành · Đổi mới.</span></li>
+      <li class="home-def-point"><span class="home-def-point__icon" aria-hidden="true">✨</span><b>Lan tỏa “chuyển động” tích cực</b><span>Để những đóng góp ấy được nhìn thấy, ghi nhận và tiếp tục lan tỏa.</span></li>
+     </ol>
+     <div class="home-def-v2__note"><span class="home-def-v2__note-icon" aria-hidden="true">i</span><p><strong>Lưu ý:</strong> AHAKUDOS không thay thế hệ thống đánh giá hiệu suất.</p></div>
     </div>
     <div class="home-def-v2__visual" aria-hidden="true">
      <div class="home-def-v2__slogan">
@@ -811,7 +855,7 @@ return `<section class="page active kudos-compose-page">
       <span><strong>01</strong> Khoảnh khắc khiến bạn muốn ghi nhận và cảm ơn</span>
       <span><strong>02</strong> Sự hỗ trợ / Năng lượng mà bạn đã nhận được</span>
      </div>
-     <textarea id="message" class="textarea" aria-describedby="count" placeholder="Ví dụ: Cảm ơn bạn đã chủ động hỗ trợ team xử lý gấp đầu việc trước deadline. Nhờ vậy cả team kịp tiến độ và tránh được một lỗi quan trọng. Mình rất trân trọng sự chủ động và tinh thần đồng đội của bạn."></textarea>
+     <textarea id="message" class="textarea" aria-describedby="count" placeholder="Ví dụ: Cảm ơn bạn đã chủ động hỗ trợ team xử lý việc gấp trước deadline, nhờ vậy cả team kịp tiến độ 🧡"></textarea>
      <span class="field-hint" id="count">0 ký tự</span>
     </div>
     <div class="coach coach--featured ${isOccasion()?'hidden':''}" role="region" aria-label="Thư ký hỗ trợ nội dung KUDOS">
@@ -1520,7 +1564,7 @@ function adminRecognition(){
          </div>
        </div>
        <div class="field"><label>Chọn background</label>
-         <div class="template-gallery admin-template-gallery" id="admin-template-gallery">${adminGalleryHtml('wish')}</div>
+         <div class="template-gallery admin-template-gallery" id="admin-template-gallery">${adminGalleryHtml(firstTemplateId())}</div>
          <span class="field-hint">4 mẫu có sẵn và các background dịp đặc biệt do Admin tải lên. Chỉ Admin dùng được background tải lên.</span>
          <div id="admin-bg-upload" class="admin-bg-upload hidden">
            <div class="admin-bg-upload-grid">
@@ -1666,14 +1710,14 @@ function openScheduleEditor(email,type){
  });
 }
 function bindAdminOps(){
- document.querySelectorAll('[data-ops-send]').forEach(b=>b.addEventListener('click',()=>{state.adminPrefill={email:b.dataset.opsSend,template:b.dataset.opsType==='birthday'?'birthday':'wish',type:b.dataset.opsType};goToPage('admin-recognition');}));
+ document.querySelectorAll('[data-ops-send]').forEach(b=>b.addEventListener('click',()=>{state.adminPrefill={email:b.dataset.opsSend,template:b.dataset.opsType==='birthday'?(typeTemplates('birthday')[0]||{id:'birthday'}).id:firstTemplateId(),type:b.dataset.opsType};goToPage('admin-recognition');}));
  document.querySelectorAll('[data-ops-review]').forEach(b=>b.addEventListener('click',()=>openScheduleEditor(b.dataset.opsReview,b.dataset.opsType)));
  document.querySelectorAll('[data-ops-cancel]').forEach(b=>b.addEventListener('click',async()=>{if(!window.confirm('Huỷ lịch gửi này?'))return;b.disabled=true;try{const res=await rpc('huyLichGui',b.dataset.opsCancel);ADMIN.schedules=res.schedules||[];render();toast(res.notice);}catch(e){b.disabled=false;toast(e.message);}}));
  document.querySelector('[data-ops-bulk]')?.addEventListener('click',async e=>{
   const up=ADMIN.upcoming||{};const today=vnDay(new Date().toISOString());
   const list=[...(up.birthdays||[]).map(r=>[r,'birthday']),...(up.anniversaries||[]).map(r=>[r,'anniversary'])].filter(([r,t])=>!scheduleFor(r.email,t,r.date));
   if(!window.confirm('Hẹn giờ tự động gửi cho '+list.length+' người với nội dung mẫu, 09:00 đúng ngày, phạm vi Riêng tư?\n\nBạn vẫn có thể Sửa / Huỷ từng lịch sau đó.'))return;
-  e.target.disabled=true;let okN=0;const bgAnn=(allTemplates().find(t=>t.id!=='birthday')||{id:'wish'}).id;
+  e.target.disabled=true;let okN=0;const bgAnn=firstTemplateId();
   for(const [r,t] of list){try{const res=await rpc('datLichGui',{type:t,email:r.email,date:r.date<today?today:r.date,time:'09:00',message:opsDefaultMessage(r,t),templateId:t==='birthday'?'birthday':bgAnn,visibility:'private'});ADMIN.schedules=res.schedules||[];ADMIN.autoSend=!!res.autoSend;okN++;}catch(err){console.warn('[AHAKUDOS] schedule',r.email,err);}}
   render();toast('Đã hẹn giờ '+okN+'/'+list.length+' lịch gửi.');
  });
@@ -1686,6 +1730,8 @@ function fitKudosCard(card){
  const msg=card.querySelector('.kd-card-msg');
  if(!content||!msg)return;
  msg.style.fontSize='';msg.style.lineHeight='';content.style.padding='';
+ const zoned=card.classList.contains('kd-card-zoned');
+ if(zoned){card.classList.toggle('kd-card-stacked',card.getBoundingClientRect().width<600);if(card.classList.contains('kd-card-stacked'))return;}
  let size=parseFloat(getComputedStyle(msg).fontSize)||20;
  let line=1.48;let guard=0;
  const overflowing=()=>content.scrollHeight>content.clientHeight+1;
@@ -1697,6 +1743,8 @@ function fitKudosCard(card){
    content.style.padding='3.3cqw 2.2cqw';guard=0;
    while(overflowing()&&size>7.5&&guard<20){size-=0.4;msg.style.fontSize=size+'px';guard++;}
  }
+ // Safe-zone backgrounds: if the message would need to shrink below 11px, show the artwork on top and the full content below instead.
+ if(zoned&&size<11){msg.style.fontSize='';msg.style.lineHeight='';content.style.padding='';card.classList.add('kd-card-stacked');}
 }
 function fitAllKudosCards(scope){
  const root=scope||document;
@@ -1889,7 +1937,7 @@ function bindTabs(){
 function bindAdminRecognition(){
  const emailInput=document.querySelector('#admin-recipient-email');const suggestions=document.querySelector('#admin-recipient-suggestions');const selectedBox=document.querySelector('#admin-selected-recipient');const message=document.querySelector('#admin-recognition-message');const title=document.querySelector('#admin-recognition-title');
  const noCompany=document.querySelector('#admin-no-company-email');const companyMode=document.querySelector('#admin-company-mode');const manualMode=document.querySelector('#admin-manual-mode');const manualName=document.querySelector('#admin-manual-name');const manualDept=document.querySelector('#admin-manual-dept');const manualEmail=document.querySelector('#admin-manual-email');
- let selectedEmployee=null;let selectedTemplate='wish';let selectedType='acting';let selectedVisibility='public';let manualRecipient=false;
+ let selectedEmployee=null;let selectedTemplate=firstTemplateId();let selectedType='acting';let selectedVisibility='public';let manualRecipient=false;
  function renderEmployee(emp){selectedEmployee=emp;if(!emp){selectedBox.classList.add('hidden');selectedBox.innerHTML='';document.querySelector('#admin-recipient-preview').innerHTML='<div class="mini-avatar">@</div><div><b>Chưa chọn người nhận</b><span>Nhập email nhân sự để tìm kiếm</span></div>';return;}selectedBox.innerHTML=`${miniAvatar(emp.email,emp.name)}<div><b>${escapeHtml(emp.name)}</b><span>${escapeHtml(emp.email)}</span><em>${escapeHtml(emp.dept||'')}</em></div><span class="recipient-ok">✓ Đã chọn</span>`;selectedBox.classList.remove('hidden');document.querySelector('#admin-recipient-preview').innerHTML=`${miniAvatar(emp.email,emp.name)}<div><b>${escapeHtml(emp.name)}</b><span>${escapeHtml(emp.email)}</span><em>${escapeHtml(emp.dept||'')}</em></div>`;}
  function visibilityUi(){document.querySelectorAll('[data-admin-visibility]').forEach(x=>{x.disabled=false;x.classList.remove('disabled');x.classList.toggle('selected',x.dataset.adminVisibility===selectedVisibility);});}
  function syncManualPreview(){if(!manualRecipient)return;const emp={name:manualName.value.trim(),dept:manualDept.value.trim(),email:manualEmail.value.trim(),manual:true};if(emp.name||emp.email)renderEmployee(emp);else renderEmployee(null);updatePreview();}
@@ -2018,7 +2066,7 @@ function runCoach(){
 }
 function templateGalleryHtml(){
  const list=typeTemplates(state.kudosType);
- if(!list.some(t=>t.id===state.selectedTemplate))state.selectedTemplate=(list[0]||{id:'wish'}).id;
+ if(!list.some(t=>t.id===state.selectedTemplate))state.selectedTemplate=(list[0]||{id:firstTemplateId()}).id;
  return list.map(t=>`<button type="button" class="template-option ${state.selectedTemplate===t.id?'selected':''}" data-template="${escapeHtml(t.id)}" aria-label="Background ${escapeHtml(t.name)}" aria-pressed="${state.selectedTemplate===t.id}">
         <span class="template-thumb tpl-${escapeHtml(t.id)}" style="background:${bgFor(t.id).fallback}"><img class="art-img" src="${escapeHtml(bgFor(t.id).url)}" alt="" aria-hidden="true"><span class="thumb-tick" aria-hidden="true">✓</span></span>
       </button>`).join('');
@@ -2065,7 +2113,7 @@ function syncCultureRequirement(){
  ['.kudos-content-format','.coach','#culture-field'].forEach(sel=>document.querySelector(sel)?.classList.toggle('hidden',birthday));
  if(birthday&&state.values.size){state.values.clear();document.querySelectorAll('.culture-chip').forEach(c=>{c.classList.remove('selected','suggested');c.setAttribute('aria-pressed','false');});}
  const msg=document.querySelector('#message');
- if(msg)msg.placeholder=occ?occ.placeholder:'Ví dụ: Cảm ơn bạn đã chủ động hỗ trợ team xử lý gấp đầu việc trước deadline. Nhờ vậy cả team kịp tiến độ và tránh được một lỗi quan trọng. Mình rất trân trọng sự chủ động và tinh thần đồng đội của bạn.';
+ if(msg)msg.placeholder=occ?occ.placeholder:'Ví dụ: Cảm ơn bạn đã chủ động hỗ trợ team xử lý việc gấp trước deadline, nhờ vậy cả team kịp tiến độ 🧡';
  const label=document.querySelector('#culture-picker-label .optional-label');
  if(label)label.textContent=optional?'· không bắt buộc':'· chọn từ 1 đến 3';
  const dated=occ&&!occ.custom;
@@ -2355,6 +2403,7 @@ handleDeepLink();
 if(REVIEW)window.AhaKudosApp=Object.freeze({isAdmin:()=>!!BOOT.isAdmin,page:()=>state.page,mode:()=>state.mode,go(page){if(!page)return;const admin=/^admin-/.test(page);if(admin&&!BOOT.isAdmin){toast('Mục này thuộc Giao diện Admin — chọn kịch bản "Admin".');return;}state.mode=admin?'admin':'employee';if(page==='kudos-detail')return;goToPage(page);}});
 render();
 initHomeHandbookProgress();
+startGreetingRefresh();
 window.AhaKudosBoot.ready();
 migrateLegacyAvatar();
 window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;console.error('[AHAKUDOS] runtime error',e.error||e.message);toast('Có lỗi hiển thị. Nếu màn hình không phản hồi, vui lòng tải lại trang.');});

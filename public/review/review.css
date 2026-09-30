@@ -17,7 +17,7 @@
 .aha-rv-fab.is-on{background:#FF7F32}
 
 /* Feedback Mode: hover / selected / flash (outline + offset → no layout shift, content never covered) */
-body.fb-mode #app [data-feedback-id]{cursor:copy}
+body.fb-mode #app [data-feedback-id]{cursor:auto}
 body.fb-mode #app [data-feedback-id].fb-hover{outline:2px dashed rgba(255,127,50,.45);outline-offset:3px}
 #app [data-feedback-id].fb-selected{outline:2px solid #FF7F32;outline-offset:3px}
 #app [data-feedback-id].fb-flash{animation:aha-fb-flash 1.6s ease-out 1}

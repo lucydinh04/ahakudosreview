@@ -77,31 +77,45 @@
     list.forEach(s => scenarioSel.appendChild(el('option', { value: s.id, text: s.label, selected: s.id === scenario })));
   }
 
-  /* ---------- 3. Feedback Mode (hover outline + click to comment) ---------- */
+  /* ---------- 3. Feedback Mode: the app works normally (left click); RIGHT-CLICK a section to comment on it.
+     Touch screens: long-press (≈0.55s) a section. ---------- */
   let hoverEl = null;
+  const HINT = 'Feedback Mode: nhấn chuột phải vào khu vực có viền cam để góp ý (điện thoại: nhấn giữ). Chuột trái vẫn dùng app như bình thường.';
   function setMode(on) {
     document.body.classList.toggle('fb-mode', !!on);
     if (!on && hoverEl) { hoverEl.classList.remove('fb-hover'); hoverEl = null; }
-    renderBar(); if (on) toast('Feedback Mode: bấm vào một khu vực có viền cam để góp ý.');
+    renderBar(); if (on) toast(HINT);
   }
   const isReviewUi = t => !!(t && t.closest && t.closest('.aha-review-ui'));
-  // Top menu controls keep working in Feedback Mode (switch tabs, search, account); comment on the menu by clicking its empty area.
-  const PASS_THROUGH = '.hb-header button, .hb-header a, .hb-header input, .hb-header select, .hb-header [role="button"]';
-  const passThrough = t => !!(t && t.closest && t.closest(PASS_THROUGH));
+  const sectionAt = t => (t && t.closest && t.closest('#app') && !isReviewUi(t)) ? t.closest('[data-feedback-id]') : null;
   document.addEventListener('mouseover', e => {
     if (!document.body.classList.contains('fb-mode') || isReviewUi(e.target)) return;
-    const s = passThrough(e.target) ? null : e.target.closest && e.target.closest('[data-feedback-id]');
+    const s = e.target.closest && e.target.closest('[data-feedback-id]');
     if (s === hoverEl) return; if (hoverEl) hoverEl.classList.remove('fb-hover'); hoverEl = s; if (s) s.classList.add('fb-hover');
   });
-  // Capture phase: in Feedback Mode a click comments on the section instead of triggering the app.
-  document.addEventListener('click', e => {
-    if (!document.body.classList.contains('fb-mode') || isReviewUi(e.target)) return;
-    if (!e.target.closest || !e.target.closest('#app') || passThrough(e.target)) return;
-    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-    const s = e.target.closest('[data-feedback-id]');
+  function commentAt(target) {
+    const s = sectionAt(target);
     if (!s) { toast('Khu vực này chưa hỗ trợ góp ý — chọn vùng có viền cam.'); return; }
     openSection(s.dataset.feedbackId, s);
+  }
+  // Right-click = comment. Left clicks are never intercepted, so every button, tab and form keeps working.
+  document.addEventListener('contextmenu', e => {
+    if (!document.body.classList.contains('fb-mode') || isReviewUi(e.target) || !e.target.closest || !e.target.closest('#app')) return;
+    if (e.target.closest('input,textarea,[contenteditable="true"]')) return; // keep copy/paste menus in form fields
+    e.preventDefault();
+    commentAt(e.target);
   }, true);
+  // Long-press on touch screens (iOS Safari does not fire contextmenu).
+  let pressTimer = null, pressFired = false, pressXY = null;
+  document.addEventListener('touchstart', e => {
+    if (!document.body.classList.contains('fb-mode') || e.touches.length !== 1 || isReviewUi(e.target) || !sectionAt(e.target)) return;
+    const t = e.target; pressFired = false; pressXY = [e.touches[0].clientX, e.touches[0].clientY];
+    clearTimeout(pressTimer); pressTimer = setTimeout(() => { pressFired = true; commentAt(t); }, 550);
+  }, { passive: true, capture: true });
+  document.addEventListener('touchmove', e => { if (pressTimer && pressXY && Math.hypot(e.touches[0].clientX - pressXY[0], e.touches[0].clientY - pressXY[1]) > 10) { clearTimeout(pressTimer); pressTimer = null; } }, { passive: true, capture: true });
+  document.addEventListener('touchend', () => { clearTimeout(pressTimer); pressTimer = null; }, { passive: true, capture: true });
+  // A long-press already opened the panel: swallow the click the browser sends after it.
+  document.addEventListener('click', e => { if (pressFired) { pressFired = false; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); } }, true);
 
   /* ---------- 4. "!" indicators (overlay, never inside the layout) ---------- */
   const layer = el('div', { class: 'aha-fb-layer aha-review-ui', 'aria-live': 'polite' });
@@ -254,6 +268,7 @@
   fetch((JSON.parse(document.getElementById('ahakudos-config').textContent || '{}').basePath || '') + '/api/bridge', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'layTrangThai', args: [], scenario }) })
     .then(r => r.json()).then(j => { if (j && j.ok && j.data && j.data.review) fillScenarios(j.data.review.scenarios); }).catch(() => {});
   document.body.classList.add('fb-mode'); // review mode is always on for signed-in reviewers (toggle = this page view only)
+  setTimeout(() => toast(HINT), 900);
   renderBar(); store.loadFeedback(); queueDraw();
   R.ui = Object.freeze({ openSection, openSidebar, setMode, refreshFeedbackIndicators: drawIndicators });
   }

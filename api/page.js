@@ -1,4 +1,4 @@
-// GET / (and /ahakudos) — serves the app shell to an identified user, otherwise a sign-in notice
+// GET / (and /ahakudos, /aha-kudos) — serves the app shell to an identified user, otherwise a sign-in notice
 // (or the DEV sign-in page when ENABLE_DEV_IDENTITY=true outside production).
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';

@@ -42,7 +42,15 @@
       "destination": "/api/page"
     },
     {
+      "source": "/aha-kudos",
+      "destination": "/api/page"
+    },
+    {
       "source": "/ahakudos/",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/aha-kudos/",
       "destination": "/api/page"
     },
     {
@@ -50,7 +58,15 @@
       "destination": "/api/:path*"
     },
     {
+      "source": "/aha-kudos/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
       "source": "/ahakudos/:path*",
+      "destination": "/:path*"
+    },
+    {
+      "source": "/aha-kudos/:path*",
       "destination": "/:path*"
     }
   ],
@@ -74,6 +90,15 @@
       ]
     },
     {
+      "source": "/aha-kudos/app/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/(backgrounds|illustrations|branding)/(.*)",
       "headers": [
         {
@@ -84,6 +109,15 @@
     },
     {
       "source": "/ahakudos/(backgrounds|illustrations|branding)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/aha-kudos/(backgrounds|illustrations|branding)/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

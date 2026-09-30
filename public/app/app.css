@@ -4548,3 +4548,12 @@ p,li,small,.sub,blockquote,.coach-nudge,.home-def-v2__lead,.home-def-v2__support
 .hb-dept-opt.is-selected{background:#fff1e6;color:#b44d12}
 .dept-filter-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:12px 18px;border-radius:14px;background:#fff5ee;border:1px solid #ffd9bf;color:#7a3a10;font-size:14px}
 @media (max-width:640px){.hb-dept,.hb-dept-btn{width:100%;max-width:none}.hb-dept-list{left:0;right:0;width:auto}}
+/* Highlight the brand word at the start of the intro */
+.home-def-brand{font-weight:800;color:#FF7F32;letter-spacing:.01em;background:linear-gradient(transparent 62%,rgba(255,127,50,.18) 62%);padding:0 2px;border-radius:2px}
+
+/* Admin: Employee ID / Gender tag and special onboard milestones */
+.hr-tag{display:inline-block;margin-top:3px;font-size:11.5px;font-weight:700;color:#355a86;background:#eaf2fc;border-radius:999px;padding:1px 8px}
+.person-id .hr-tag{margin:6px 0 2px;font-size:12.5px}
+.tenure-pill{display:inline-block;margin-right:6px;font-size:12px;font-weight:800;font-style:normal;color:#b44d12;background:#fff1e6;border-radius:999px;padding:1px 9px}
+.milestone-tenure-card{grid-column:1/-1}
+.milestone-admin-info em .tenure-pill{display:inline-block;width:auto;margin:0 6px 0 0;vertical-align:1px}

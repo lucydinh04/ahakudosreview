@@ -3,8 +3,11 @@
   "version": "30.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": "22.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
-    "build": "node tools/check-build.mjs"
+    "build": "node tools/check-build.mjs",
+    "start": "node tools/check-build.mjs && node server.mjs"
   }
 }
